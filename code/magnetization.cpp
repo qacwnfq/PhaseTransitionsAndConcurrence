@@ -28,6 +28,18 @@ double m_x(const double& mx, const double& mz, const double& s, const double& l,
 	    std::sqrt(std::pow((p*s*l*std::pow(mz, p-1)), 2) + std::pow((1-s-2*s*(1-l)*mx), 2)));
 }
 
+double sign_mx(const double& mx, const double& mz, const double& s, const double& l, const double& p)
+{
+  if(s<1./(3-2*l))
+  {
+    return ((1-s-2*s*(1-l)*mx) /
+  	    std::sqrt(std::pow((p*s*l*std::pow(mz, p-1)), 2) + std::pow((1-s-2*s*(1-l)*mx), 2)) - mx);
+  }
+  else
+    return ((1-s-2*s*(1-l)*mx) /
+	    std::sqrt(std::pow((p*s*l*std::pow(mz, p-1)), 2) + std::pow((1-s-2*s*(1-l)*mx), 2)) - mx);
+}
+
 double m_z(const double& mx, const double& mz, const double& s, const double& l, const double& p)
 {
   // if(s<1./(3-2*l))
@@ -93,15 +105,24 @@ auto run(const int& ns, const int& nl, const int&p, const double& precision, ofs
 	prevmx = mx[i][j];
 	prevmz = mz[i][j];
 	mx[i][j] = (m_x(prevmx, prevmz, sspace[j], lspace[i], p));
-	// mz[i][j] = (m_z(prevmx, prevmz, sspace[j], lspace[i], p));
+	// Uses this formula because mz has two solutions, one of which is wrong
 	mz[i][j] = 1 - mx[i][j]*mx[i][j];
-	if(m<1000)
+	if(m>1000)
 	{
-	  // cout << mx[i][j] << endl;
-	  // if(mx[i][j]==-1)
-	  //  mx[i][j]=0;
+	  auto testmx = linspace(0, 1, 1001);
+	  for(auto &k : testmx)
+	  {
+	    auto temp_mz = 1-k*k;
+	    auto sign = sign_mx(k, temp_mz, sspace[j], lspace[i], p);
+	    if(sign < 0)
+	    {
+	      mx[i][j] = k;
+	      mz[i][j] = temp_mz;
+	      break;
+	    }
+	  }
+	  break;
 	}
-	// mx[i][j] = (1-mz[i][j]*mz[i][j]);
       }
       while((std::abs(prevmz-mz[i][j]) > precision) or (std::abs(prevmx - mx[i][j]) > precision));
       if(mx[i][j] < 0.)
@@ -115,8 +136,8 @@ auto run(const int& ns, const int& nl, const int&p, const double& precision, ofs
 	   << mx[i][j]*mx[i][j] + mz[i][j]*mz[i][j] << "," << m
 	   << std::endl;
 	    
-      assert(mx[i][j]*mx[i][j] + mz[i][j]*mz[i][j] <= 1 + precision);
-      assert(mx[i][j]*mx[i][j] + mz[i][j]*mz[i][j] >= 1 - precision);
+      //assert(mx[i][j]*mx[i][j] + mz[i][j]*mz[i][j] <= 1 + precision);
+      //assert(mx[i][j]*mx[i][j] + mz[i][j]*mz[i][j] >= 1 - precision);
     }
   }
   auto f = mx;
@@ -125,8 +146,8 @@ auto run(const int& ns, const int& nl, const int&p, const double& precision, ofs
 
 int main(int argc, char** argv)
 {
-  int ns = 101;
-  int nl = 10;
+  int ns = 10001;
+  int nl = 11;
   int p = 5;
   double precision = 1e-14;
   ofstream myfile;
@@ -172,7 +193,7 @@ int main(int argc, char** argv)
     gp.set_xlabel("s");
     gp.set_style("points").plot_xy(sspace, mx[i], "m_x");
     gp.set_style("points").plot_xy(sspace, mz[i], "m_z");
-    gp.set_style("points").plot_xy(sQP2, QP2, "m_xQP2");
+    // gp.set_style("points").plot_xy(sQP2, QP2, "m_xQP2");
     gp.set_smooth("bezier").set_style("line").plot_xy(x, y, "boundary QP1 to QP2");
     gp.unset_smooth();
     gp.showonscreen();
