@@ -92,6 +92,7 @@ auto run(const int& ns, const int& nl, const int&p, const double& precision)
   double prevmx, prevmz;
   for(int i=0; i<nl; ++i)
   {
+    cout << "next lambda" << endl;
     for(int j=0; j<ns; ++j)
     {
       double m = 0;
@@ -133,7 +134,7 @@ auto run(const int& ns, const int& nl, const int&p, const double& precision)
 
 int main(int argc, char** argv)
 {
-  int ns = 51;
+  int ns = 10001;
   int nl = 11;
   int p = 5;
   double precision = 1e-14;
@@ -148,7 +149,7 @@ int main(int argc, char** argv)
   for(int i=0; i < nl; ++i)
   {
     std::ostringstream s;
-    s << "MagnetizationLambda " << lspace[i] << "p" << p << ".csv";
+    s << "../results/magnetization/MagnetizationLambda" << lspace[i] << "p" << p << ".csv";
     auto title = s.str();
     myfile.open(title);
     myfile << "Thermodynamic Limit Magnetization p=" << p <<"\n";
@@ -160,37 +161,4 @@ int main(int argc, char** argv)
       }
     myfile.close();
   }
-  // std::vector<double> y;
-  // y.push_back(0.);
-  // y.push_back(1.);
-  
-  // for(int i=0; i < mx.size(); ++i)
-  // {
-  //   std::vector<double> x;
-  //   x.push_back(1./(3-2*lspace[i]));
-  //   x.push_back(1./(3-2*lspace[i]));
-  //   std::vector<double> QP2;
-  //   std::vector<double> sQP2;
-  //   for(const auto& s:sspace)
-  //   {
-  //     if(s>1/(3-2*lspace[i]))
-  //     {
-  // 	sQP2.push_back(s);
-  // 	QP2.push_back((1.-s)/(2*s*(1.-lspace[i])));
-  //     }
-  //   }
-  //   Gnuplot gp("Magnetization in X direction");
-  //   std::ostringstream s;
-  //   s << "Magnetization for lambda " << lspace[i];
-  //   auto title = s.str();
-  //   gp.set_title(title);
-  //   gp.set_xlabel("s");
-  //   gp.set_style("points").plot_xy(sspace, mx[i], "m_x");
-  //   gp.set_style("points").plot_xy(sspace, mz[i], "m_z");
-  //   // gp.set_style("points").plot_xy(sQP2, QP2, "m_xQP2");
-  //   gp.set_smooth("bezier").set_style("line").plot_xy(x, y, "boundary QP1 to QP2");
-  //   gp.unset_smooth();
-  //   gp.showonscreen();
-  //   cin.get();
-  //}
 }
