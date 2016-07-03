@@ -2,7 +2,7 @@
 #
 # This is a collection of classes and functions revolving
 # density matrices and their partial traces.
-from itertools import combinations
+from itertools import permutations
 import math
 
 from code.quantumAnnealing import gen_m
@@ -16,8 +16,9 @@ class dm:
         self.rho = {}
         S = N/2
         for m in gen_m(N):
-            # Todo figure out mapping of rho onto zeeman
-            self.rho[zeeman(N, S, m)] = rho
+            for n in gen_m(N):
+                # Todo figure out mapping of rho onto zeeman
+                self.rho[ketBra(zeeman(N, S, n), zeeman(N, S, m))] = rho
 
     def ptrace(self, k):
         """traces out the kth spin"""
@@ -29,25 +30,30 @@ class state:
     def __init__(self, spins):
         """takes list of u and d like 'uud' to create a state
         of spin up up and down"""
-        if len(spins) == 0:
-            print("No spins.")
-        # self.state = {}
-        self.state = []
+        self.state = [[]]
         for i in range(len(spins)):
             # makes sure we are in up down basis
             assert(spins[i] == 'u' or spins[i] == 'd')
-            # self.state[i] = spins[i]
-            self.state.append(spins[i])
-        self.norm = math.sqrt(1)
+            self.state[0].append(spins[i])
+        self.numVectors = 1
+        self.nm = math.sqrt(1)
+
+    def norm(self):
+        norm = math.sqrt(self.numVectors)
+        self.norm = norm
+        return self.norm
 
     def scalar_product(self, ket):
-        assert(len(self.state) == len(ket.state))
-        result = 1
-        for i in range(len(self.state)):
-            if self.state[i] != ket.state[i]:
-                result = 0
-                break
-        return result
+        endResult = 0
+        for i in self.state:
+            for j in ket.state:
+                result = 1
+                for k in range(len(i)):
+                    if i[k] != j[k]:
+                        result = 0
+                        break
+                endResult += result
+        return endResult/(self.nm*ket.nm)
 
     def tensor_product(self, bra):
         assert(len(self.state) == len(bra.state))
@@ -64,12 +70,19 @@ class state:
 
     def __eq__(self, other):
         result = False
-        if self.scalar_product(other) == 1:
+        if math.isclose(self.scalar_product(other), 1.):
             result = True
         return result
 
     def __str__(self):
         return str(self.state)
+
+    def __add__(self, other):
+        newstate = state([])
+        newstate.state = self.state + other.state
+        newstate.numVectors = self.numVectors + other.numVectors
+        newstate.nm = newstate.norm()
+        return newstate
 
 
 class ketBra:
@@ -99,14 +112,26 @@ def zeeman(N, S, m):
     S and magnetic order m"""
     # this function will only do the special case for now for simplicity
     assert(S == N/2)
-    # takes string and returns string.
-    # find this function for lists or
-    # replace used lists by strings. Second option might be easier
-    s = state(['u', 'd', 'u'])
-    print(s.stat)
-    p = list(combinations([0, 1, 1], 2))
-    print(p)
+    s = state(N*['u'])
+    n = int(S - m)
+    for i in range(n):
+        s.state[0][i] = 'd'
+    ps = []
+    for p in permutations(s.state[0]):
+        if p not in ps:
+            ps.append(p)
+    zstate = state(ps[0])
+    # for p in ps:
+    #    zstate += state(p)
+    for i in range(1, len(ps)):
+        zstate += state(ps[i])
 
+    # print(str(1./zstate.nm) + " " + str(zstate))
+    # print("")
+    return zstate
 
 if __name__ == "__main__":
-    zeeman(4, 2, 4)
+    zeeman(3, 1.5, 1.5)
+    zeeman(3, 1.5, .5)
+    zeeman(3, 1.5, -.5)
+    zeeman(3, 1.5, -1.5)
