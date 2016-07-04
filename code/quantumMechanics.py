@@ -43,40 +43,41 @@ class dm:
                                zeeman(self.N-1, (self.N-1)/2, ms[m])))] = 0
         # calculates which terms add up
         for key, value in self.rho.items():
-            # up
-            newKet = None
-            newKetFactor = 1
-            newBra = None
-            newBraFactor = 1
-            for i in range(len(key.ket.state)):
-                if key.ket.state[i][k] == 'd':
-                    if newKet is None:
-                        newstate = key.ket.state[i]
-                        del newstate[k]
-                        newKet = state(newstate)
-                    else:
-                        newstate = key.ket.state[i]
-                        del newstate[k]
-                        newKet += state(newstate)
-            for i in range(len(key.bra.state)):
-                if key.bra.state[i][k] == 'd':
-                    if newBra is None:
-                        newstate = key.bra.state[i]
-                        del newstate[k]
-                        newBra = state(newstate)
-                    else:
-                        newstate = key.bra.state[i]
-                        del newstate[k]
-                        newBra += state(newstate)
-            if newKet is not None and newBra is not None:
-                newKetFactor = newKet.nm/key.ket.nm
-                newBraFactor = newBra.nm/key.bra.nm
-                print(newKetFactor)
-                print(newBraFactor)
-                print(ketBra(newKet, newBra))
-                result[(ketBra(newKet, newBra))] += (value *
-                                                     newKetFactor *
-                                                     newBraFactor)
+            for ud in ['d', 'u']:
+                newKet = None
+                newKetFactor = 1
+                newBra = None
+                newBraFactor = 1
+                newVal = 0
+                for i in range(len(key.ket.state)):
+                    if key.ket.state[i][k] == ud:
+                        if newKet is None:
+                            newstate = key.ket.state[i]
+                            newstate = [newstate[i] for i
+                                        in range(len(newstate)) if i != k]
+                            newKet = state(newstate)
+                        else:
+                            newstate = key.ket.state[i]
+                            newstate = [newstate[i] for i
+                                        in range(len(newstate)) if i != k]
+                            newKet += state(newstate)
+                for i in range(len(key.bra.state)):
+                    if key.bra.state[i][k] == ud:
+                        if newBra is None:
+                            newstate = key.bra.state[i]
+                            newstate = [newstate[i] for i in
+                                        range(len(newstate)) if i != k]
+                            newBra = state(newstate)
+                        else:
+                            newstate = key.bra.state[i]
+                            newstate = [newstate[i] for i in
+                                        range(len(newstate)) if i != k]
+                            newBra += state(newstate)
+                if newKet is not None and newBra is not None:
+                    newKetFactor = newKet.nm/key.ket.nm
+                    newBraFactor = newBra.nm/key.bra.nm
+                    newVal = value * newKetFactor * newBraFactor
+                    result[(ketBra(newKet, newBra))] += newVal
         # updates N
         self.N -= 1
         self.rho = result
