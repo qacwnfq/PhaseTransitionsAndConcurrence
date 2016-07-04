@@ -1,7 +1,7 @@
 import math
 import numpy as np
 
-from code.quantumMechanics import state, ketBra, zeeman
+from code.quantumMechanics import state, ketBra, zeeman, dm
 
 
 def test_states_and_ketBra():
@@ -114,3 +114,33 @@ def test_zeeman():
                 state(['u', 'd', 'u', 'd']) +
                 state(['d', 'u', 'd', 'u']))
     assert(actual == expected)
+
+
+def test_dm():
+    # 1) case
+    expected = np.zeros(shape=(3, 3))
+    numbers = [[1, 2, 3], [4, 5, 6], [7, 8, 9]]
+    for i in range(3):
+        for j in range(3):
+            expected[i][j] = numbers[i][j]
+    actual = dm(expected, 2)
+    actual = actual.nparray()
+    assert((actual == expected).all())
+
+    # 2) case
+    rho = np.zeros(shape=(3, 3))
+    numbers = [[1, 2, 3], [4, 5, 6], [7, 8, 9]]
+    for i in range(3):
+        for j in range(3):
+            rho[i][j] = numbers[i][j]
+    actual = dm(rho, 2)
+    actual = actual.ptrace(0)
+    actual = actual.nparray()
+    expected = np.zeros(shape=(2, 2))
+    expected[0][0] = rho[0][0] + rho[1][1]/2
+    expected[0][1] = 1/math.sqrt(2)*(rho[0][1]+rho[1][2])
+    expected[1][0] = 1/math.sqrt(2)*(rho[1][0]+rho[2][1])
+    expected[1][1] = rho[2][2] + rho[1][1]/2
+    print(actual)
+    print(expected)
+    np.testing.assert_almost_equal(actual, expected)
