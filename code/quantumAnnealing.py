@@ -7,13 +7,21 @@
 import math
 from matplotlib import pyplot as plt
 import numpy as np
-from scipy import optimize
+import pandas as pd
 from qutip import qeye, sigmax, sigmaz, entropy, states, tensor, ptrace
+from scipy import optimize
+
 
 from code.quantumMechanics import dm, Sx, Sz
 
 # defines
 P = 5
+
+
+def listToDataFrame(column_name, l):
+    """Wrapper to pandas dataframe"""
+    df = pd.DataFrame({column_name: l})
+    return df
 
 
 def qutipConcurrence(s, lam, N=2, p=P):
@@ -54,7 +62,8 @@ def qutipConcurrence(s, lam, N=2, p=P):
 
 
 def cardaniac(A, B, C, D):
-    """returns solutions in list ordered of A*x**3+B*x**2+C*x+D*
+    """returns solutions in list ordered of A*x**3+B*x**2+C*x+D.
+    This is used to compute 2 spin eigenenergies.
     """
     Delta = (27*A**2*D**2+4*B**3*D-18*A*B*C*D+4*A*C**3-B**2*C**2)/(108*A**4)
     p = (9*A*C-3*B**2)/(9*A**2)
@@ -120,7 +129,7 @@ def H0plusVaffplusVtf(N, s, l):
 
 
 def diagonalize(H):
-    """"""
+    """Wrapper for numpy method"""
     # use np to get only eigvals not eigenvectors of
     # symmetric or hermitian matrix. (H is always hermitian)
     return np.linalg.eigh(H)
@@ -128,12 +137,15 @@ def diagonalize(H):
 
 # http://stackoverflow.com/questions/19820921/a-simple-matlab-like-way-of-finding-the-null-space-of-a-small-matrix-in-numpy
 def null(a, rtol=1e-5):
+    """Find null space of matrix. This is used to get eigenvectors
+    from eigenvalues"""
     u, s, v = np.linalg.svd(a)
     rank = (s > rtol*s[0]).sum()
     return rank, v[rank:].T.copy()
 
 
 def getConcurrenceFromEigenvectors(eigenvalues, eigenvectors):
+    """Returns concurrence from eigenvalues and eigenvectors"""
     rho, N = cket2dm(eigenvalues, eigenvectors)
     # N dimensions of eigenvectors means there are N-1 particles!!
     partial_rho = extract2qubitDm(rho, N-1)
@@ -144,6 +156,7 @@ def getConcurrenceFromEigenvectors(eigenvalues, eigenvectors):
 
 
 def concurrence(rho):
+    """Takes a 2-particle density matrix and returns concurrence"""
     temp = rho.copy()
     rho[0][0] = -rho[0][2]
     rho[1][0] = -rho[1][2]
@@ -153,8 +166,6 @@ def concurrence(rho):
     rho[2][2] = -temp[2][0]
     rho = np.asmatrix(rho)
     R = rho*rho
-    trace = np.trace(R)
-    np.testing.assert_almost_equal(trace, 1.)
     ev = np.linalg.eigvals(R)
     ev = np.real(ev)
     for e in ev:
@@ -168,6 +179,8 @@ def concurrence(rho):
 
 
 def extract2qubitDm(rho, N):
+    """Calls partial trace on rho until it is a 2-particle
+    density matrix and returns it."""
     partial_rho = 0
     if N == 2:
         partial_rho = rho
@@ -185,6 +198,7 @@ def extract2qubitDm(rho, N):
 
 
 def cket2dm(ev, ket):
+    """Custom implementation of qutips ket2dm"""
     ket = ket[:, 0]  # gets eigenvector corresponding to groundstate
     N = len(ket)
     rho = np.zeros(shape=(N+1, N+1))
@@ -234,19 +248,19 @@ def classicalEnergy(s, l=None, p=P):
 
 
 def e(x, s, l, p=P):
-    """ """
+    """x is the minimum of the classical groundstate energy."""
     return (-s*l*math.sin(x)**p + s*(1-l)*math.cos(x)**2 -
             (1-s)*math.cos(x))
 
 
 def gamma(x, s, l, p=P):
-    """ """
+    """x is the minimum of the classical groundstate energy."""
     return (-0.5*s*l*p*(p-1)*math.sin(x)**(p-2)*math.cos(x)**2 +
             s*(1-l)*math.sin(x)**2)
 
 
 def delta(x, s, l, p=P):
-    """ """
+    """x is the minimum of the classical groundstate energy."""
     return (
         -s*l*(p*(p-1)*math.sin(x)**(p-2)*math.cos(x)**2-2*p*math.sin(x)**p) +
         s*(1-l)*(2*math.sin(x)**2-4*math.cos(x)**2) +
@@ -254,17 +268,17 @@ def delta(x, s, l, p=P):
 
 
 def epsilon(x, s, l, p=P):
-    """ """
+    """x is the minimum of the classical groundstate energy."""
     return (-2.*gamma(x, s, l, p) / delta(x, s, l, p))
 
 
 def Delta(x, s, l, p=P):
-    """ """
+    """x is the minimum of the classical groundstate energy."""
     return delta(x, s, l, p)*math.sqrt(1-epsilon(x, s, l, p)**2)
 
 
 def calculateGap(s, l, p=P):
-    """Uses analytical formula to calculate the Gap."""
+    """Uses analytical formula to calculate the Gap in the classical limit."""
     x = np.linspace(0, math.pi, 10001)
     f = [e(i, s, l, p) for i in x]
     f = {}
@@ -275,6 +289,19 @@ def calculateGap(s, l, p=P):
         return Delta(fm, s, l, p)
     except ValueError:
         return 0
+
+
+def calculateConcurrenceInLimit(s, l, p=P):
+    """Returns the concurrence in the classical limit."""
+    x = np.linspace(0, math.pi, 10001)
+    f = [e(i, s, l, p) for i in x]
+    f = {}
+    for i in x:
+        f[i] = e(i, s, l, p)
+    fm = min(f, key=f.get)
+    eps = epsilon(fm, s, l, p=p)
+    alpha = math.sqrt((1-eps)/(1+eps))
+    return (1-alpha)
 
 
 def lambdaOne():
@@ -331,26 +358,38 @@ def lambdaOneGap():
 
 def lambdaOneConcurrence():
     """ Calculates the concurrence for lambda=1"""
-    s_list = np.linspace(0, 1, 11)
-    N_list = [i for i in range(11, 12)]
+    s_list = np.linspace(0, 1, 101)
+    N_list = [i for i in range(12, 13)]
     concurrence = {}
+    concurrenceLimit = []
     concurrence3 = {}
+    title = "../results/concurrence/p5/lambda1.csv"
+    resultdf = pd.DataFrame()
+    try:
+        resultdf = pd.DataFrame.from_csv(title)
+    except:
+        pass
     for N in N_list:
         print("Running for " + str(N) + " spins.")
         concurrence[N] = []
         concurrence3[N] = []
         for s in s_list:
-            print(s)
             eigenvalues, eigenvectors = run(H0plusVtf, N, s)
             c = getConcurrenceFromEigenvectors(eigenvalues, eigenvectors)
-            concurrence[N].append(c)
+            concurrence[N].append(c*(N-1))
             # c3 = qutipConcurrence(s, 1, N=N)
             # concurrence3[N].append(c3)
+        resultdf = resultdf.copy()
+        resultdf[str(N)] = concurrence[N]
+        resultdf.to_csv(title, sep=',')
+    for s in s_list:
+        concurrenceLimit.append(calculateConcurrenceInLimit(s, 1, p=P))
     for N in N_list:
         plt.plot(s_list, concurrence[N], label=str(N) + " spins", marker='^')
         # plt.plot(s_list, concurrence3[N], label=str(N) + " spins qutip",
         #          marker='v')
-    plt.title("Concurrence c")
+    plt.plot(s_list, concurrenceLimit, label="Classical Limit", marker='x')
+    plt.title("Rescaled Concurrence Cr")
     plt.xlabel("s")
     plt.ylabel("c")
     plt.legend()
@@ -417,37 +456,48 @@ def lambdaNotOneGap():
 def lambdaNotOneConcurrence():
     """ Calculates the concurrence for lambda!=1"""
     s_list = np.linspace(0, 1, 101)
-    N_list = [i for i in range(3, 6)]
+    N_list = [i for i in range(8, 11)]
     l_list = np.linspace(0., 1, 6)
     l_list = [0.8]
+    title = "../results/concurrence/p5/lambdaNot1.csv"
+    resultdf = pd.DataFrame()
+    try:
+        resultdf = pd.DataFrame.from_csv(title)
+    except:
+        pass
     for l in l_list:
         concurrence = {}
-        concurrence2 = {}
         concurrence3 = {}
         for N in N_list:
             print(N)
             concurrence[N] = []
-            concurrence2[N] = []
+            concurrenceLimit = []
             concurrence3[N] = []
             for s in s_list:
                 eigenvalues, eigenvectors = run(H0plusVaffplusVtf, N, s, l)
                 c = getConcurrenceFromEigenvectors(eigenvalues, eigenvectors)
-                concurrence[N].append(c)
-                c3 = qutipConcurrence(s, l, N=N)
-                concurrence3[N].append(c3)
+                concurrence[N].append(c*(N-1))
+                # c3 = qutipConcurrence(s, l, N=N)
+                # concurrence3[N].append(c3)
+            resultdf = resultdf.copy()
+            resultdf[str(N)] = concurrence[N]
+            resultdf.to_csv(title, sep=',')
+        for s in s_list:
+            concurrenceLimit.append(calculateConcurrenceInLimit(s, l, p=P))
         maxC = 0
         for N in N_list:
             plt.plot(s_list, concurrence[N], label=str(N), marker="v",
-                     linewidth=4)
+                     linewidth=1)
             maxC = max(maxC, max(concurrence[N]))
             # if l != 0:
-            plt.plot(s_list, concurrence3[N], label=str(N), marker="^",
-                     linewidth=2.5)
+            # plt.plot(s_list, concurrence3[N], label=str(N), marker="^",
+            #         linewidth=1)
+        # plt.plot(s_list, concurrenceLimit, label="Limit", marker="x")
         # x = 1./(3-2*l)
         # plt.plot((x, x), (0, maxC), label=str("1/(3-2*lambda)"))
         plt.title("Concurrence for lambda=" + str(l))
         plt.xlabel("s")
-        plt.ylabel("c")
+        plt.ylabel("Rescaled Concurrence Cr")
         plt.legend(bbox_to_anchor=(1.05, 1), loc=2, borderaxespad=0.)
         plt.show()
         plt.cla()
@@ -531,5 +581,5 @@ if __name__ == "__main__":
     # lambdaNotOne2Spins()
     # lambdaOneGap()
     # lambdaNotOneGap()
-    # lambdaOneConcurrence()
-    lambdaNotOneConcurrence()
+    lambdaOneConcurrence()
+    # lambdaNotOneConcurrence()

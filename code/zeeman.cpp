@@ -56,7 +56,7 @@ void run()
 {
   std::ofstream myfile;
   myfile.open("data/zeemanbasis.csv");
-  int maxN = 12;
+  int maxN = 13;
   // Writes column header row. There are N+1 columns, same
   // as the number of values for m.
   for(int i=0; i<=maxN; ++i)
@@ -65,8 +65,9 @@ void run()
   }
   myfile << std::endl;
   
-  for(int N=2; N<maxN; ++N)
+  for(int N=1; N<maxN; ++N)
   {
+    std::cout << "running for " << N << " Spins." << std::endl;
     std::set<double> s = gen_m(N);
     std::set<double>::iterator it;
     myfile << N << ",";
