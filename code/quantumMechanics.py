@@ -2,11 +2,14 @@
 #
 # This is a collection of classes and functions revolving
 # density matrices and their partial traces.
-from itertools import permutations
 import math
 import numpy as np
+import pandas as pd
 
-from code.quantumAnnealing import gen_m
+def gen_m(N):
+    assert(N > 0)
+    S = float(N)/2
+    return [-S + i for i in range(N+1)]
 
 
 class dm:
@@ -18,10 +21,12 @@ class dm:
         self.N = N
         S = N/2
         ms = gen_m(N)
+        self.z = []
+        for n in range(len(ms)):
+            self.z.append(zeeman(N, S, ms[n]))
         for m in range(len(ms)):
             for n in range(len(ms)):
-                self.rho[(ketBra(zeeman(N, S, ms[n]),
-                                 zeeman(N, S, ms[m])))] = rho[n][m]
+                self.rho[(ketBra(self.z[n], self.z[m]))] = rho[n][m]
 
     def nparray(self):
         result = np.zeros(shape=(self.N+1, self.N+1))
@@ -29,18 +34,20 @@ class dm:
         for m in range(len(ms)):
             for n in range(len(ms)):
                 result[n][m] = (self.rho[
-                    (ketBra(zeeman(self.N, self.N/2, ms[n]),
-                            zeeman(self.N, self.N/2, ms[m])))])
+                    (ketBra(self.z[n],
+                            self.z[m]))])
         return result
 
     def ptrace(self, k):
         """traces out the kth spin"""
         result = {}
         ms = gen_m(self.N-1)
+        self.z = []
+        for n in range(len(ms)):
+            self.z.append(zeeman(self.N-1, (self.N-1)/2, ms[n]))
         for m in range(len(ms)):
             for n in range(len(ms)):
-                result[(ketBra(zeeman(self.N-1, (self.N-1)/2, ms[n]),
-                               zeeman(self.N-1, (self.N-1)/2, ms[m])))] = 0
+                result[(ketBra(self.z[n], self.z[m]))] = 0
         # calculates which terms add up
         for key, value in self.rho.items():
             for ud in ['d', 'u']:
@@ -61,6 +68,8 @@ class dm:
                             newstate = [newstate[i] for i
                                         in range(len(newstate)) if i != k]
                             newKet += state(newstate)
+                if newKet is None:
+                    continue
                 for i in range(len(key.bra.state)):
                     if key.bra.state[i][k] == ud:
                         if newBra is None:
@@ -112,15 +121,25 @@ class state:
         self.norm = norm
         return self.norm
 
+    # def scalar_product(self, ket):
+    #     endResult = 0
+    #     for i in self.state:
+    #         for j in ket.state:
+    #             result = 1
+    #             for k in range(len(i)):
+    #                 if i[k] != j[k]:
+    #                     result = 0
+    #                     break
+    #             endResult += result
+    #     return endResult/(self.nm*ket.nm)
+
     def scalar_product(self, ket):
         endResult = 0
         for i in self.state:
             for j in ket.state:
                 result = 1
-                for k in range(len(i)):
-                    if i[k] != j[k]:
-                        result = 0
-                        break
+                if i != j:
+                    result = 0
                 endResult += result
         return endResult/(self.nm*ket.nm)
 
@@ -183,24 +202,49 @@ class ketBra:
         return j
 
 
-def zeeman(N, S, m):
-    """returns a ket in the zeeman basis for N spins with total Spin
-    S and magnetic order m"""
-    # this function will only do the S=N/2 case for now.
-    assert(S == N/2)
-    s = state(N*['u'])
-    n = int(S - m)
-    for i in range(n):
-        s.state[0][i] = 'd'
-    ps = []
-    for p in permutations(s.state[0]):
-        if p not in ps:
-            ps.append(p)
-    zstate = state(ps[0])
-    for i in range(1, len(ps)):
-        zstate += state(ps[i])
-    return zstate
+# def zeeman(N, S, m):
+#     """returns a ket in the zeeman basis for N spins with total Spin
+#     S and magnetic order m"""
+#     # this function will only do the S=N/2 case for now.
+#     # TODO optimize
+#     # assert(S == N/2)
+#     s = state(N*['u'])
+#     n = int(S - m)
+#     for i in range(n):
+#         s.state[0][i] = 'd'
+#     ps = []
+#     for p in permutations(s.state[0]):
+#         if p not in ps:
+#             ps.append(p)
+#     zstate = state(ps[0])
+#     for i in range(1, len(ps)):
+#         zstate += state(ps[i])
+#     return zstate
+
+
+def zeeman_ext(N, S, m):
+    """Reads the zeeman basis data, which was created externally
+    by a c++ function."""
+    zeemanBasis = pd.DataFrame.from_csv("data/zeemanbasis.csv", sep=',')
+    # Note that index is the number of spins by design.
+    permutations = []
+    # Iterates over the columns in a row.
+    for index, row in zeemanBasis.iterrows():
+        # Pandas reads index as str, but to compare N and index
+        # they should both have the same type.
+        if str(N) == index:
+            # Converts the pandas.Series to a list.
+            permutations = row.tolist()
+            permutations = [x for x in permutations if str(x) != 'nan']
+            break
+    # Selects the permutations which belong to m.
+    permutations = permutations[gen_m(N).index(m)]
+    # Adjusts format to what is expected in the zeeman method above.
+    permutations = permutations.split(" ")
+    permutations.remove("")
+    permutations = [list(i) for i in permutations]
+    return permutations
+
 
 if __name__ == "__main__":
-    print(gen_m(4))
-    pass
+    zeeman_ext(4, 2, 0)
