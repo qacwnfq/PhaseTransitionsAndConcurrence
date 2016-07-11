@@ -1,15 +1,68 @@
 # Author Fredrik Jadebeck
 #
 # This is a collection of classes and functions revolving
-# density matrices and their partial traces.
+# density matrices and their partial traces as well as other
+# basic quantum mechanical functions.
+
 import math
 import numpy as np
 import pandas as pd
+
 
 def gen_m(N):
     assert(N > 0)
     S = float(N)/2
     return [-S + i for i in range(N+1)]
+
+
+def kronecker(m, n):
+    """returns kronecker_{m,n}"""
+    if n != m:
+        return 0
+    elif n == m:
+        return 1
+    else:
+        raise RuntimeError("This can not happen.")
+
+
+def mSxn(m, n, S):
+    """returns matrixelement m,n of Sx for spin S"""
+    assert(S > 0)
+    return (kronecker(m, n+1) + kronecker(m+1, n))*0.5*math.sqrt(
+        S*(S+1) - m*n)
+
+
+def mSzn(m, n, S):
+    """returns matrixelement m,n of Sz for spin S"""
+    assert(S > 0)
+    return kronecker(m, n)*m
+
+
+def Sx(N):
+    assert(N > 0)
+    """constructs and returns Sx matrix block for N particles and
+    maximal Spin"""
+    S = float(N)/2
+    # with this max spin following m exist
+    m = gen_m(N)
+    # most of the matrix are zeroes
+    Sx = np.zeros(shape=(N+1, N+1))
+    for i in range(0, N):
+        Sx[i][i+1] = mSxn(m[i], m[i+1], S)
+        Sx[i+1][i] = mSxn(m[i+1], m[i], S)
+    return np.asmatrix(Sx)
+
+
+def Sz(N):
+    """constructs and returns Sz matrix block for N particles and
+    maximal Spin"""
+    assert(N > 0)
+    S = float(N)/2
+    m = gen_m(N)
+    Sz = np.zeros(shape=(N+1, N+1))
+    for i in range(N+1):
+        Sz[i][i] = mSzn(m[i], m[i], S)
+    return np.asmatrix(Sz)
 
 
 class dm:
@@ -121,18 +174,6 @@ class state:
         self.norm = norm
         return self.norm
 
-    # def scalar_product(self, ket):
-    #     endResult = 0
-    #     for i in self.state:
-    #         for j in ket.state:
-    #             result = 1
-    #             for k in range(len(i)):
-    #                 if i[k] != j[k]:
-    #                     result = 0
-    #                     break
-    #             endResult += result
-    #     return endResult/(self.nm*ket.nm)
-
     def scalar_product(self, ket):
         endResult = 0
         for i in self.state:
@@ -202,24 +243,15 @@ class ketBra:
         return j
 
 
-# def zeeman(N, S, m):
-#     """returns a ket in the zeeman basis for N spins with total Spin
-#     S and magnetic order m"""
-#     # this function will only do the S=N/2 case for now.
-#     # TODO optimize
-#     # assert(S == N/2)
-#     s = state(N*['u'])
-#     n = int(S - m)
-#     for i in range(n):
-#         s.state[0][i] = 'd'
-#     ps = []
-#     for p in permutations(s.state[0]):
-#         if p not in ps:
-#             ps.append(p)
-#     zstate = state(ps[0])
-#     for i in range(1, len(ps)):
-#         zstate += state(ps[i])
-#     return zstate
+def zeeman(N, S, m):
+    """returns a ket in the zeeman basis for N spins with total Spin
+    S and magnetic order m"""
+    # this function will only do the S=N/2 case for now.
+    ps = zeeman_ext(N, S, m)
+    zstate = state(ps[0])
+    for i in range(1, len(ps)):
+        zstate += state(ps[i])
+    return zstate
 
 
 def zeeman_ext(N, S, m):
