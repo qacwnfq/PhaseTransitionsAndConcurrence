@@ -1,7 +1,120 @@
 import math
 import numpy as np
 
-from code.quantumMechanics import state, ketBra, zeeman, dm
+from code.quantumMechanics import (kronecker, gen_m,
+                                   mSxn, mSzn, Sx,
+                                   Sz, state, ketBra,
+                                   zeeman, dm)
+
+
+def test_kronecker():
+    m = [1, 11, -345, 3451, 0, 0.5, 123, 1.5, 1.5, 1.7, 55.5]
+    n = [1, 10, 24, 123, 0, 0.5, 123, 1.5, 2.5, 1.5, 55.5]
+    expected = [1, 0, 0, 0, 1, 1, 1, 1, 0, 0, 1]
+    actual = []
+    reflectiontest = []
+    for i in range(len(m)):
+        actual.append(kronecker(m[i], n[i]))
+        reflectiontest.append(kronecker(n[i], n[i]))
+    assert(actual == expected)
+    assert(reflectiontest == [1 for i in range(len(n))])
+
+
+def test_gen_m():
+    actual = gen_m(5)
+    expected = [-2.5, -1.5, -0.5, 0.5, 1.5, 2.5]
+    assert(actual == expected)
+
+
+def test_mSxn():
+    assert(0 == mSxn(0, 3, 6))
+    assert(0.5*math.sqrt(4**2+4-2) == mSxn(1, 2, 4))
+    assert(0.5*math.sqrt(10**2+10-2) == mSxn(1, 2, 10))
+    assert(0.5*math.sqrt(100**2+100-99*100) == mSxn(99, 100, 100))
+    assert(1 == mSxn(2, 1, 2))
+    assert(1 == mSxn(-2, -1, 2))
+    assert(0.5*math.sqrt(2) == mSxn(0, 1, 1))
+
+
+def test_mSzn():
+    assert(0 == mSzn(0, 1, 5))
+    assert(0 == mSzn(99, 6, 100))
+    assert(100 == mSzn(100, 100, 100))
+    assert(100 == mSzn(100, 100, 1090))
+    assert(3 == mSzn(3, 3, 10))
+    assert(-10 == mSzn(-10, -10, 100))
+    assert(0 == mSzn(0, 0, 10000))
+
+
+def test_Sx():
+    # test one particle
+    expected = np.zeros(shape=(2, 2))
+    expected[1][0] = 0.5
+    expected[0][1] = 0.5
+    expected = np.asmatrix(expected)
+    actual = Sx(1)
+    assert((expected == actual).all())
+    # test two particles
+    expected = np.zeros(shape=(3, 3))
+    expected[0][1] = 1/math.sqrt(2)
+    expected[1][0] = 1/math.sqrt(2)
+    expected[1][2] = 1/math.sqrt(2)
+    expected[2][1] = 1/math.sqrt(2)
+    expected = np.asmatrix(expected)
+    actual = Sx(2)
+    np.testing.assert_almost_equal(actual, expected)
+    # test three particles
+    expected = np.zeros(shape=(4, 4))
+    expected[0][1] = math.sqrt(3)
+    expected[1][0] = math.sqrt(3)
+    expected[1][2] = 2
+    expected[2][1] = 2
+    expected[2][3] = math.sqrt(3)
+    expected[3][2] = math.sqrt(3)
+    expected = expected*0.5
+    expected = np.asmatrix(expected)
+    actual = Sx(3)
+    np.testing.assert_almost_equal(actual, expected)
+    # test four particles
+    expected = np.zeros(shape=(5, 5))
+    expected[0][1] = 2
+    expected[1][0] = 2
+    expected[1][2] = math.sqrt(6)
+    expected[2][1] = math.sqrt(6)
+    expected[2][3] = math.sqrt(6)
+    expected[3][2] = math.sqrt(6)
+    expected[3][4] = 2
+    expected[4][3] = 2
+    expected = expected*0.5
+    expected = np.asmatrix(expected)
+    actual = Sx(4)
+    np.testing.assert_almost_equal(actual, expected)
+    # test 64 particles
+    N = 64
+    expected = np.zeros(shape=(N+1, N+1))
+    S = float(N)/2
+    # with this max spin following m exist
+    m = [-S + i for i in range(N+1)]
+    for i in range(0, N):
+        expected[i][i+1] = mSxn(m[i], m[i+1], S)
+        expected[i+1][i] = mSxn(m[i+1], m[i], S)
+    expected = np.asmatrix(expected)
+    actual = Sx(N)
+    np.testing.assert_almost_equal(actual, expected)
+
+
+def test_Sz():
+    Ns = [2, 3, 4, 64]
+    for N in Ns:
+        expected = np.zeros(shape=(N+1, N+1))
+        S = float(N)/2
+        # with this max spin following m exist
+        m = [-S + i for i in range(N+1)]
+        for i in range(len(m)):
+            expected[i][i] = mSzn(m[i], m[i], S)
+        expected = np.asmatrix(expected)
+        actual = Sz(N)
+        np.testing.assert_almost_equal(actual, expected)
 
 
 def test_states_and_ketBra():
