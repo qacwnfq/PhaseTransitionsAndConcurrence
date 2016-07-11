@@ -57,8 +57,9 @@ void run()
   std::ofstream myfile;
   myfile.open("data/zeemanbasis.csv");
   int maxN = 12;
-  // Writes column header row.
-  for(int i=0; i<maxN; ++i)
+  // Writes column header row. There are N+1 columns, same
+  // as the number of values for m.
+  for(int i=0; i<=maxN; ++i)
   {
     myfile << i << ',';
   }
