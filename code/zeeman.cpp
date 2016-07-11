@@ -12,8 +12,6 @@
 std::set<std::string> zeeman(const int& N, const double& m)
 {
   double S = (double)N/2.;
-  std::cout << S << std::endl;
-  std::cout << m << std::endl;
   std::string s="";
   // Figures out how many spins should be down.
   int n = S-m;
@@ -58,8 +56,15 @@ void run()
 {
   std::ofstream myfile;
   myfile.open("data/zeemanbasis.csv");
-  int maxN = 6;
-  for(int N=5; N<maxN; ++N)
+  int maxN = 12;
+  // Writes column header row.
+  for(int i=0; i<maxN; ++i)
+  {
+    myfile << i << ',';
+  }
+  myfile << std::endl;
+  
+  for(int N=2; N<maxN; ++N)
   {
     std::set<double> s = gen_m(N);
     std::set<double>::iterator it;
@@ -71,11 +76,12 @@ void run()
       std::set<std::string>::iterator zit;
       for(zit=zeemanBasisVectors.begin(); zit!=zeemanBasisVectors.end(); zit++)
       {
-	std::cout << *zit << std::endl;
 	myfile << *zit << " ";
       }
       myfile << ",";
     }
+    // The loop adds more columns so that python pandas dataframe
+    // knows the max number of columns is achieved for every row.
     for(int i=N+1; i<=maxN;++i)
       myfile << ",";
     myfile << std::endl;
