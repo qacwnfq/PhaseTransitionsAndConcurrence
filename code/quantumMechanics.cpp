@@ -5,6 +5,7 @@
 #define QUANTUMMECHANICS_H
 
 #include <assert.h>
+#include <cmath>
 #include <Eigen/Core>
 #include <set>
 #include <vector>
@@ -37,7 +38,8 @@ int kronecker(const double& m, const double& n)
 
 double mSxn(const double& m, const double& n, const double& S)
 {
-
+  assert(S > 0);
+  return (kronecker(m, n+1) + kronecker(m+1, n))*0.5*std::sqrt(S*(S+1) -m*n);
 }
 
 double mSzn(const double& m, const double& n, const double& S)
