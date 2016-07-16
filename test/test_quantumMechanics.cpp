@@ -10,6 +10,9 @@
 #include <cmath>
 #include <vector>
 
+//TODO remove this later
+#include <iostream>
+
 BOOST_AUTO_TEST_CASE(test_gen_m)
 {
   // tests N=2 case
@@ -75,7 +78,27 @@ BOOST_AUTO_TEST_CASE(test_mSzn)
 
 BOOST_AUTO_TEST_CASE(test_Sx)
 {
+  int N = 2;
+  Matrix<double, 3, 3> expected;
+  expected.setZero();
+  expected(0, 1) = 0.5*std::sqrt(2);
+  expected(1, 0) = 0.5*std::sqrt(2);
+  expected(1, 2) = 0.5*std::sqrt(2);
+  expected(2, 1) = 0.5*std::sqrt(2);
+  Matrix<double, Dynamic, Dynamic> actual = Sx(N);
+  BOOST_CHECK(expected == actual);
 
+  N = 3;
+  Matrix<double, 4, 4> expected2;
+  expected2.setZero();
+  expected2(0, 1) = std::sqrt(3)/2;
+  expected2(1, 0) = std::sqrt(3)/2;
+  expected2(1, 2) = 1;
+  expected2(2, 1) = 1;
+  expected2(2, 3) = std::sqrt(3)/2;
+  expected2(3, 2) = std::sqrt(3)/2;
+  actual = Sx(N);
+  BOOST_CHECK(expected2 == actual);
 }
 
 BOOST_AUTO_TEST_CASE(test_Sz)
@@ -88,4 +111,14 @@ BOOST_AUTO_TEST_CASE(test_Sz)
   expected(2, 2) = 1;
   Matrix<double, Dynamic, Dynamic> actual = Sz(N);
   BOOST_CHECK(expected == actual);
+
+  N = 3;
+  Matrix<double, 4, 4> expected2;
+  expected2.setZero();
+  expected2(0, 0) = -1.5;
+  expected2(1, 1) = -0.5;
+  expected2(2, 2) = 0.5;
+  expected2(3, 3) = 1.5;
+  actual = Sz(N);
+  BOOST_CHECK(expected2 == actual);
 }

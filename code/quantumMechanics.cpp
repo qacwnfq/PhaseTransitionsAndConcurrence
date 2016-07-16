@@ -46,10 +46,21 @@ double mSzn(const double& m, const double& n, const double& S)
   return kronecker(m, n)*m;
 }
 
-// auto Sx(const int& N)
-// {
-
-// }
+Matrix<double, Dynamic, Dynamic> Sx(const int& N)
+{
+  assert(N > 0);
+  double S = (double)N/2;
+  std::vector<double> m = gen_m(N);
+  Matrix<double, Dynamic, Dynamic> Sx;
+  Sx.resize(N+1, N+1);
+  Sx.setZero();
+  for(int i=0; i<N; ++i)
+  {
+    Sx(i, i+1) = mSxn(m[i], m[i+1], S);
+    Sx(i+1, i) = mSxn(m[i+1], m[i], S);
+  }
+  return Sx;
+}
 
 Matrix<double, Dynamic, Dynamic> Sz(const int& N)
 {
