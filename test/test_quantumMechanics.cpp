@@ -61,3 +61,14 @@ BOOST_AUTO_TEST_CASE(test_mSxn)
   BOOST_CHECK(1 == mSxn(-2, -1, 2));
   BOOST_CHECK(0.5*std::sqrt(2) == mSxn(0, 1, 1));
 }
+
+BOOST_AUTO_TEST_CASE(test_mSzn)
+{
+  BOOST_CHECK(0 == mSzn(0, 1, 5));
+  BOOST_CHECK(0 == mSzn(99, 6, 100));
+  BOOST_CHECK(100 == mSzn(100, 100, 100));
+  BOOST_CHECK(100 == mSzn(100, 100, 1090));
+  BOOST_CHECK(3 == mSzn(3, 3, 10));
+  BOOST_CHECK(-10 == mSzn(-10, -10, 100));
+  BOOST_CHECK(0 == mSzn(0, 0, 10000));
+}
