@@ -7,6 +7,7 @@
 #define BOOST_TEST_MODULE GRNN test suite 
 
 #include <boost/test/unit_test.hpp>
+#include <cmath>
 #include <vector>
 
 BOOST_AUTO_TEST_CASE(test_gen_m)
@@ -48,4 +49,15 @@ BOOST_AUTO_TEST_CASE(test_kronecker)
   actual = kronecker(-1.5, -1.5);
   expected = 1;
   BOOST_CHECK(actual == expected);
+}
+
+BOOST_AUTO_TEST_CASE(test_mSxn)
+{
+  BOOST_CHECK(0 == mSxn(0, 3, 6));
+  BOOST_CHECK(0.5*std::sqrt(4*4+4-2) == mSxn(1, 2, 4));
+  BOOST_CHECK(0.5*std::sqrt(10*10+10-2) == mSxn(1, 2, 10));
+  BOOST_CHECK(0.5*std::sqrt(100*100+100-99*100) == mSxn(99, 100, 100));
+  BOOST_CHECK(1 == mSxn(2, 1, 2));
+  BOOST_CHECK(1 == mSxn(-2, -1, 2));
+  BOOST_CHECK(0.5*std::sqrt(2) == mSxn(0, 1, 1));
 }
