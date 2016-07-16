@@ -1,0 +1,5 @@
+# Author Fredrik Jadebeck
+#
+# Makefile for the boost unit tests of test_quantumMechanics.cpp
+test_quantumMechanics: ../code/quantumMechanics.cpp test_quantumMechanics.cpp
+	g++ ../code/quantumMechanics.cpp test_quantumMechanics.cpp -I /usr/include/eigen3/ -std=c++11 -lboost_unit_test_framework -I /home/fredrik/repos/phaseTransitionsAndConcurrence/code/ -w -o test_quantumMechanics
