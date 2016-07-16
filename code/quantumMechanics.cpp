@@ -44,7 +44,8 @@ double mSxn(const double& m, const double& n, const double& S)
 
 double mSzn(const double& m, const double& n, const double& S)
 {
-
+  assert(S > 0);
+  return kronecker(m, n)*m;
 }
 
 // auto Sx(const int& N)
