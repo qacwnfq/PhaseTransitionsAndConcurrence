@@ -1,8 +1,6 @@
 // Author Fredrik Jadebeck
 //
-// Headerfile for the quantumMechanics.py port
-#ifndef QUANTUMMECHANICS_H
-#define QUANTUMMECHANICS_H
+// Source for the quantumMechanics.py port
 
 #include <assert.h>
 #include <cmath>
@@ -53,8 +51,18 @@ double mSzn(const double& m, const double& n, const double& S)
 
 // }
 
-// auto Sz(const int& N)
-// {
+Matrix<double, Dynamic, Dynamic> Sz(const int& N)
+{
+  assert(N > 0);
+  double S = (double)N/2;
+  std::vector<double> m = gen_m(N);
+  Matrix<double, Dynamic, Dynamic> Sz;
+  Sz.resize(N+1, N+1);
+  Sz.setZero();
+  for(int i=0; i<N+1; ++i)
+  {
+    Sz(i, i) = mSzn(m[i], m[i], S);
+  }
+  return Sz;
+}
 
-// }
-#endif

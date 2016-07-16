@@ -72,3 +72,20 @@ BOOST_AUTO_TEST_CASE(test_mSzn)
   BOOST_CHECK(-10 == mSzn(-10, -10, 100));
   BOOST_CHECK(0 == mSzn(0, 0, 10000));
 }
+
+BOOST_AUTO_TEST_CASE(test_Sx)
+{
+
+}
+
+BOOST_AUTO_TEST_CASE(test_Sz)
+{
+  int N = 2;
+  Matrix<double, 3, 3> expected;
+  expected.setZero();
+  expected(0, 0) = -1;
+  expected(1, 1) = 0;
+  expected(2, 2) = 1;
+  Matrix<double, Dynamic, Dynamic> actual = Sz(N);
+  BOOST_CHECK(expected == actual);
+}
