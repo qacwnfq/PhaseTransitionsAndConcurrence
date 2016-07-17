@@ -11,6 +11,8 @@
 #include <cmath>
 #include <vector>
 
+// todo remove later
+#include <iostream>
 
 BOOST_AUTO_TEST_CASE(test_gen_m)
 {
@@ -139,6 +141,13 @@ BOOST_AUTO_TEST_CASE(test_state_scalar_product)
 
 BOOST_AUTO_TEST_CASE(test_state_tensor_product)
 {
+  state s1("u");
+  state s2("d");
+  ketBra expected(s1, s2);
+  ketBra actual = s1.tensor_product(s2);
+  std::cout << expected << std::endl;
+  std::cout << actual << std::endl;
+  BOOST_CHECK(actual == expected);
 }
 
 
