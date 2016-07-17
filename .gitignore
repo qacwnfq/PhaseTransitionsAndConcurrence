@@ -1,0 +1,9 @@
+*.cpp~
+*.py~
+*~
+*.hpp~
+*.pyc
+*#*
+.cache/
+*.out
+*.d
