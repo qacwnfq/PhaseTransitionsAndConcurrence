@@ -121,7 +121,7 @@ BOOST_AUTO_TEST_CASE(test_Sz)
   BOOST_CHECK(expected2 == actual);
 }
 
-BOOST_AUTO_TEST_CASE(test_state)
+BOOST_AUTO_TEST_CASE(test_state_scalar_product)
 {
   state s1("uu");
   state s2("dd");
@@ -133,5 +133,38 @@ BOOST_AUTO_TEST_CASE(test_state)
   BOOST_CHECK(expected == actual);
   expected = 1;
   actual = s1.scalar_product(s1);
+  BOOST_CHECK(expected == actual);
+}
+
+BOOST_AUTO_TEST_CASE(test_state_tensor_product)
+{
+}
+
+
+BOOST_AUTO_TEST_CASE(test_state_operator_plus)
+{
+  state s1("uu");
+  state s2("dd");
+  std::vector<std::string> sum = {"uu", "dd"};
+  state expected(sum);
+  double expcetedNorm = 1./std::sqrt(2);
+  state actual = s1 + s2;
+  BOOST_CHECK(expected == actual);  
+}
+
+
+BOOST_AUTO_TEST_CASE(test_state_operator_eq)
+{
+  state s1("uu");
+  state s2("dd");
+  bool expected;
+  bool actual;
+
+  expected= false;
+  actual = (s1==s2);
+  BOOST_CHECK(expected == actual);
+
+  expected= true;
+  actual = (s1==s1);
   BOOST_CHECK(expected == actual);
 }
