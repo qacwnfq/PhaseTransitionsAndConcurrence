@@ -92,6 +92,10 @@ state::state(std::vector<std::string> spins)
 {
   this->quantumState = spins;
 }
+state::state(const state& obj)
+{
+  this->quantumState = obj.quantumState;
+}
 double state::getNorm() const
 {
   return std::sqrt(this->quantumState.size());
@@ -137,19 +141,37 @@ std::ostream& operator<<(std::ostream& os, const state& other)
   return os << ret;
 };
 
-
 ketBra::ketBra(const state& ket,
 	       const state& bra)
 {
-  std::cout << "constructor" << std::endl;
+  tket = ket;
+  tbra = bra;
 }
-ketBra ketBra::multiply_with(const ketBra& other){}
+ketBra::ketBra(const ketBra& obj)
+{
+  this->tket = obj.tket;
+  this->tbra = obj.tbra;
+}
+ketBra ketBra::multiply_with(const ketBra& other)
+{
+  
+}
+std::ostream& operator<<(std::ostream& os, const ketBra& other)
+{
+  return os << "ket |" << other.tket << ">, bra >" << other.tbra <<"|";
+}
+
 
 dm::dm(Matrix<double, Dynamic, Dynamic> rho,
        std::vector<Matrix<double, Dynamic, Dynamic> > zeemanBasis,
        const int& N)
 {
   this->N=N;
+}
+dm::dm(const dm& obj)
+{
+  // Todo Implement copy constructor after more details are kown
+  // about this class.
 }
 Matrix<double, Dynamic, Dynamic> dm::nparray(){}
 dm dm::ptrace(const int& k){}

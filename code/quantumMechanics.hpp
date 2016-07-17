@@ -33,6 +33,7 @@ public:
   state();
   state(std::string spins);
   state(std::vector<std::string> spins);
+  state(const state& obj);
   double getNorm() const;
   double scalar_product(const state& other) const;
   ketBra tensor_product(const state& other) const;
@@ -48,10 +49,12 @@ public:
   double amplitude;
   state tket;
   state tbra;
-  
+
   ketBra(const state& ket, const state& bra);
+  ketBra(const ketBra& obj);
   ketBra multiply_with(const ketBra& other);
 };
+std::ostream& operator<<(std::ostream& os, const ketBra& other);
 
 class dm
 {
@@ -65,6 +68,7 @@ public:
   dm(Matrix<double, Dynamic, Dynamic> rho,
      std::vector<Matrix<double, Dynamic, Dynamic> > zeemanBasis,
      const int& N);
+  dm(const dm& obj);
   Matrix<double, Dynamic, Dynamic> nparray();
   dm ptrace(const int& k);
 };
