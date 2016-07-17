@@ -128,12 +128,12 @@ Matrix<double, Dynamic, Dynamic> H0plusVaffplusVtf(const int& N, const double& s
 
 SelfAdjointEigenSolver<Matrix<double, Dynamic, Dynamic>> diagonalize(Matrix<double, Dynamic, Dynamic> H)
 {
+  // BE VERY CAREFUL, THIS ONLY WORKS FOR SELF ADJOINT MATRICES,
+  // WHICH THE HAMILTONIAN IS OF COUSE.
   SelfAdjointEigenSolver<Matrix<double, Dynamic, Dynamic>> es;
   es.compute(H);
   return es;
 }
-
-//TODO copy starting here
 
 Matrix<double, Dynamic, Dynamic> ket2dm(SelfAdjointEigenSolver<Matrix<double, Dynamic, Dynamic> > es, const int& N)
 {
@@ -152,7 +152,6 @@ Matrix<double, Dynamic, Dynamic> extract2qubitDm(Matrix<double, Dynamic, Dynamic
 
 double concurrence(Matrix<double, Dynamic, Dynamic> rho)
 {
-  std::cout << std::endl << rho << std::endl;
   Matrix<double, Dynamic, Dynamic> copy; // = rho;
   // Copies rho
   copy.resize(3, 3);
@@ -194,11 +193,6 @@ double concurrence(Matrix<double, Dynamic, Dynamic> rho)
 				 std::sqrt(std::abs(ev(3)))} ;
   std::sort(lambdas.begin(), lambdas.end());
   double c = std::max(0., lambdas[3] - lambdas[2] - lambdas[1] - lambdas[0]);
-  if(c == 0)
-  {
-    std::cout << "Look above for rho" << std::endl;
-    //std::cout << "rho" << copy << std::endl << std::endl;
-  }
   return c;
 }
 
