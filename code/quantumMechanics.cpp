@@ -80,10 +80,7 @@ Matrix<double, Dynamic, Dynamic> Sz(const int& N)
   return Sz;
 }
 
-state::state()
-{
-  std::cout << "empty state created" << std::endl;
-}
+state::state(){}
 state::state(std::string spins)
 {
   this->quantumState.push_back(spins);
@@ -141,24 +138,54 @@ std::ostream& operator<<(std::ostream& os, const state& other)
   return os << ret;
 };
 
+ketBra::ketBra()
+{
+  this->amplitude = 0.;
+}
 ketBra::ketBra(const state& ket,
 	       const state& bra)
 {
-  tket = ket;
-  tbra = bra;
+  this->tket = ket;
+  this->tbra = bra;
+  this->amplitude = 1;
+}
+ketBra::ketBra(const state& ket, const state& bra, const double& amp) : ketBra(ket, bra)
+{
+  this->amplitude = amp;
 }
 ketBra::ketBra(const ketBra& obj)
 {
   this->tket = obj.tket;
   this->tbra = obj.tbra;
+  this->amplitude = obj.amplitude;
 }
 ketBra ketBra::multiply_with(const ketBra& other)
 {
-  
+  auto result = this->tket.tensor_product(other.tbra);
+  result.amplitude *= this->tbra.scalar_product(other.tket);
+  return result;
+}
+bool ketBra::operator==(const ketBra& other)
+{
+  bool result = false;
+  if(this->tket == other.tket and this->tbra == other.tbra)
+    result = true;
+  else if(this->amplitude == 0. and other.amplitude == 0.)
+    result = true;
+  return result;
 }
 std::ostream& operator<<(std::ostream& os, const ketBra& other)
 {
-  return os << "ket |" << other.tket << ">, bra >" << other.tbra <<"|";
+  if(other.amplitude == 1)
+  {
+    return os << "|" << other.tket << "><" << other.tbra <<"|";
+  }
+  else if(other.amplitude != 0.)
+  {
+    return os << other.amplitude << "|" << other.tket << "><" << other.tbra <<"|";
+  }
+  else
+    return os << 0;
 }
 
 

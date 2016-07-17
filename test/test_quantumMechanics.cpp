@@ -145,8 +145,6 @@ BOOST_AUTO_TEST_CASE(test_state_tensor_product)
   state s2("d");
   ketBra expected(s1, s2);
   ketBra actual = s1.tensor_product(s2);
-  std::cout << expected << std::endl;
-  std::cout << actual << std::endl;
   BOOST_CHECK(actual == expected);
 }
 
@@ -181,3 +179,26 @@ BOOST_AUTO_TEST_CASE(test_state_operator_eq)
   actual = (s1==s1);
   BOOST_CHECK(expected == actual);
 }
+
+BOOST_AUTO_TEST_CASE(test_ketbra_multiply_with)
+{
+  state s1("uu");
+  state s2("dd");
+  ketBra expected;
+  ketBra actual;
+  
+  ketBra kb1(s1, s1);
+  ketBra kb2(s1, s2);
+  ketBra kb3(s2, s2);
+  expected = ketBra(s1, s2);
+  actual = kb1.multiply_with(kb2);
+  std::cout << expected << std::endl;
+  std::cout << actual << std::endl;
+  BOOST_CHECK(expected == actual);
+  expected = ketBra();
+  actual = kb1.multiply_with(kb3);
+  std::cout << expected << std::endl;
+  std::cout << actual << std::endl;
+  BOOST_CHECK(expected == actual);
+}
+

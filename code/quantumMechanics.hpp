@@ -50,9 +50,12 @@ public:
   state tket;
   state tbra;
 
+  ketBra();
   ketBra(const state& ket, const state& bra);
+  ketBra(const state& ket, const state& bra, const double& amp);
   ketBra(const ketBra& obj);
   ketBra multiply_with(const ketBra& other);
+  bool operator==(const ketBra& other);
 };
 std::ostream& operator<<(std::ostream& os, const ketBra& other);
 
