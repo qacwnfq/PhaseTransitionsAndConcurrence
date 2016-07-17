@@ -120,3 +120,18 @@ BOOST_AUTO_TEST_CASE(test_Sz)
   actual = Sz(N);
   BOOST_CHECK(expected2 == actual);
 }
+
+BOOST_AUTO_TEST_CASE(test_state)
+{
+  state s1("uu");
+  state s2("dd");
+  double expected;
+  double actual;
+
+  expected = 0;
+  actual = s1.scalar_product(s2);
+  BOOST_CHECK(expected == actual);
+  expected = 1;
+  actual = s1.scalar_product(s1);
+  BOOST_CHECK(expected == actual);
+}
