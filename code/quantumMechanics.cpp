@@ -5,8 +5,11 @@
 #include <assert.h>
 #include <cmath>
 #include <Eigen/Core>
+#include <iostream>
 #include <set>
 #include <vector>
+
+#include "quantumMechanics.hpp"
 
 using namespace Eigen;
 
@@ -77,3 +80,65 @@ Matrix<double, Dynamic, Dynamic> Sz(const int& N)
   return Sz;
 }
 
+state::state()
+{
+}
+state::state(std::string spins)
+{
+  this->quantumState.push_back(spins);
+}
+double state::getNorm() const
+{
+  return std::sqrt(this->quantumState.size());
+}
+double state::scalar_product(const state& other) const
+{
+  double endResult = 0;
+  for(auto i : this->quantumState)
+    for(auto j : other.quantumState)
+    {
+      double result = 1;
+      if(i!=j)
+	result = 0;
+      endResult += result;
+    }
+  return endResult/(this->getNorm()*other.getNorm());
+}
+ketBra state::tensor_product(const state& other) const
+{
+  assert(this->quantumState.size() == other.quantumState.size());
+  return ketBra(*this, other);
+}
+state state::operator+(const state& other)
+{
+  // TODO CARE, is this correct?
+  this->quantumState.insert(std::end(this->quantumState),
+			   std::begin(other.quantumState),
+			   std::end(other.quantumState));
+  return *this;
+}
+bool state::operator==(const state& other) const
+{
+  bool result = false;
+  if(std::abs(this->scalar_product(other)-1) < 0.00001)
+    result = true;
+  return result;
+}
+
+ketBra::ketBra(const state& ket,
+	       const state& bra)
+{
+  std::cout << "constructor" << std::endl;
+}
+ketBra ketBra::multiply_with(const ketBra& other){}
+
+dm::dm(Matrix<double, Dynamic, Dynamic> rho,
+       std::vector<Matrix<double, Dynamic, Dynamic> > zeemanBasis,
+       const int& N)
+{
+  this->N=N;
+}
+Matrix<double, Dynamic, Dynamic> dm::nparray(){}
+dm dm::ptrace(const int& k){}
+
+void zeeman(){}

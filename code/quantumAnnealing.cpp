@@ -140,14 +140,25 @@ Matrix<double, Dynamic, Dynamic> ket2dm(SelfAdjointEigenSolver<Matrix<double, Dy
   return es.eigenvectors().col(0)*es.eigenvectors().col(0).transpose();
 }
 
-Matrix<double, Dynamic, Dynamic> extract2qubitDm(Matrix<double, Dynamic, Dynamic> rho, const int& N)
+Matrix<double, Dynamic, Dynamic> extract2qubitDm(Matrix<double, Dynamic, Dynamic> rho,
+						 std::vector<Matrix<double, Dynamic, Dynamic> > zeemanBasis,
+						 const int& N)
 {
   if(N==2)
-    return rho;
+  {
+    // Nothing has to be done for N=2
+  }
   else
   {
     //TODO implement partial trace
+    dm partial_rho(rho, zeemanBasis, N);
+    for(int i=0; i<N-2; ++i)
+    {
+      partial_rho = partial_rho.ptrace(0);
+    }
+    rho = partial_rho.nparray();
   }
+  return rho;
 }
 
 double concurrence(Matrix<double, Dynamic, Dynamic> rho)
@@ -196,10 +207,12 @@ double concurrence(Matrix<double, Dynamic, Dynamic> rho)
   return c;
 }
 
-double calculateConcurrence(SelfAdjointEigenSolver<Matrix<double, Dynamic, Dynamic> > es, const int& N)
+double calculateConcurrence(SelfAdjointEigenSolver<Matrix<double, Dynamic, Dynamic> > es,
+			    std::vector<Matrix<double, Dynamic, Dynamic> > zeemanBasis,
+			    const int& N)
 {
   Matrix<double, Dynamic, Dynamic> rho = ket2dm(es, N);
-  rho = extract2qubitDm(rho, N);
+  rho = extract2qubitDm(rho, zeemanBasis, N);
   double trace = rho.trace();
   assert(std::abs(trace-1.) < 0.0001);
   double c = concurrence(rho);
@@ -251,15 +264,17 @@ void lambdaOneConcurrence(const int& p)
   std::vector<double> s_list = linspace(0, 1, 101);
   std::vector<int> N_list = {2};
   std::vector<std::vector<double> > concurrences;
+  std::vector<Matrix<double, Dynamic, Dynamic> > zeemanBasis;
   for(int N: N_list)
   {
+    // TODO calculate zeeman basis once here up until N
     std::cout << "Calculating concurrence" << N << " Spins." << std::endl;
     std::vector<double> concurrence;
     for(double s: s_list)
     {
       SelfAdjointEigenSolver<Matrix<double, Dynamic, Dynamic> > es;
       es = diagonalize(H0plusVtf(N, s, p));
-      concurrence.push_back(calculateConcurrence(es, N)*(N-1));
+      concurrence.push_back(calculateConcurrence(es, zeemanBasis, N)*(N-1));
     }
     concurrences.push_back(concurrence);
   }
@@ -332,9 +347,9 @@ void lambdaNotOneConcurrence(const int& p)
 {
   // Calculates the rescaled concurrence for lambda!=1
   std::vector<double> s_list = linspace(0, 1, 101);
-  // std::vector<double> l_list = linspace(0, 1, 3);
-  std::vector<double> l_list = {0.5};
+  std::vector<double> l_list = linspace(0, 1, 6);
   std::vector<int> N_list = {2};
+  std::vector<Matrix<double, Dynamic, Dynamic> > zeemanBasis;
   for(double l : l_list)
   {
     std::vector<std::vector<double> > concurrences;
@@ -346,7 +361,7 @@ void lambdaNotOneConcurrence(const int& p)
       {
 	SelfAdjointEigenSolver<Matrix<double, Dynamic, Dynamic> > es;
 	es = diagonalize(H0plusVaffplusVtf(N, s, l, p));
-	concurrence.push_back(calculateConcurrence(es, N)*(N-1));
+	concurrence.push_back(calculateConcurrence(es, zeemanBasis, N)*(N-1));
       }
       concurrences.push_back(concurrence);
     }
