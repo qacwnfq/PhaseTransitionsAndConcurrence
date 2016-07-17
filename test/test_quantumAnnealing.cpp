@@ -74,3 +74,33 @@ BOOST_AUTO_TEST_CASE(test_Vaff)
   }
 }
 
+BOOST_AUTO_TEST_CASE(test_concurrence)
+{
+  double expected;
+  double actual;
+  Matrix<double, Dynamic, Dynamic> rho;
+  rho.resize(3, 3);
+  
+  expected = 0;
+  rho.setZero();
+  actual = concurrence(rho);
+  assert(actual == expected);
+
+  expected = 1;
+  rho.setZero();
+  rho(0, 2) = 1;
+  actual = concurrence(rho);
+  assert(actual == expected);
+
+  expected = 0.4471470773590325;
+  rho.setZero();
+  rho(0, 0) = 0.947195;
+  rho(0, 1) = -0.00638849;
+  rho(0, 2) = -0.223552;
+  rho(1, 0) = -0.00638849;
+  rho(1, 1) = 4.3099e-05;
+  rho(1, 2) = 0.00150778;
+  rho(2, 0) = -0.223552;
+  rho(2, 1) = 0.00150778;
+  rho(2, 2) = 0.0527616;
+}
