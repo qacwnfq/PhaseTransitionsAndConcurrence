@@ -1,6 +1,7 @@
 // Author Fredrik Jadebeck
 //
 // Unit tests for the c++ port of quantumMechanics
+
 #include "quantumMechanics.hpp"
 #define BOOST_TEST_MODULE quantumMechanicsTest
 #define BOOST_TEST_DYN_LINK 
@@ -147,9 +148,12 @@ BOOST_AUTO_TEST_CASE(test_state_operator_plus)
   state s2("dd");
   std::vector<std::string> sum = {"uu", "dd"};
   state expected(sum);
-  double expcetedNorm = 1./std::sqrt(2);
+  double expectedNorm = std::sqrt(2);
   state actual = s1 + s2;
-  BOOST_CHECK(expected == actual);  
+  double actualNorm = actual.getNorm();
+  BOOST_CHECK(s1 == state("uu"));
+  BOOST_CHECK(expected == actual);
+  BOOST_CHECK(expectedNorm == actualNorm);
 }
 
 

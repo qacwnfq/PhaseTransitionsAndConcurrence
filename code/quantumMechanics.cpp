@@ -82,10 +82,15 @@ Matrix<double, Dynamic, Dynamic> Sz(const int& N)
 
 state::state()
 {
+  std::cout << "empty state created" << std::endl;
 }
 state::state(std::string spins)
 {
   this->quantumState.push_back(spins);
+}
+state::state(std::vector<std::string> spins)
+{
+  this->quantumState = spins;
 }
 double state::getNorm() const
 {
@@ -109,13 +114,13 @@ ketBra state::tensor_product(const state& other) const
   assert(this->quantumState.size() == other.quantumState.size());
   return ketBra(*this, other);
 }
-state state::operator+(const state& other)
+state state::operator+(const state& other) const
 {
-  // TODO CARE, is this correct?
-  this->quantumState.insert(std::end(this->quantumState),
+  auto copy = *this;
+  copy.quantumState.insert(std::end(copy.quantumState),
 			   std::begin(other.quantumState),
 			   std::end(other.quantumState));
-  return *this;
+  return copy;
 }
 bool state::operator==(const state& other) const
 {
@@ -124,6 +129,14 @@ bool state::operator==(const state& other) const
     result = true;
   return result;
 }
+std::ostream& operator<<(std::ostream& os, const state& other)
+{
+  std::string ret;
+  for(auto v: other.quantumState)
+    ret += v;
+  return os << ret;
+};
+
 
 ketBra::ketBra(const state& ket,
 	       const state& bra)

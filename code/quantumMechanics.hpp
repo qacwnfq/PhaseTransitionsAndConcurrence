@@ -6,6 +6,7 @@
 
 #include <Eigen/Core>
 #include <map>
+#include <iostream>
 #include <string>
 #include <vector>
 
@@ -31,12 +32,15 @@ public:
 
   state();
   state(std::string spins);
+  state(std::vector<std::string> spins);
   double getNorm() const;
   double scalar_product(const state& other) const;
   ketBra tensor_product(const state& other) const;
-  state operator+(const state& other);
+  state operator+(const state& other) const;
   bool operator==(const state& other) const;
 };
+// this should be declared as a free function!
+std::ostream& operator<<(std::ostream& os, const state& other);
 
 class ketBra
 {
