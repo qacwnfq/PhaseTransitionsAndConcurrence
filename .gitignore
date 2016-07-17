@@ -7,3 +7,5 @@
 .cache/
 *.out
 *.d
+.gitignore
+__pycache__/

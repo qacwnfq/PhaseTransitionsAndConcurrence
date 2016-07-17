@@ -10,8 +10,6 @@
 #include <cmath>
 #include <vector>
 
-//TODO remove this later
-#include <iostream>
 
 BOOST_AUTO_TEST_CASE(test_gen_m)
 {
