@@ -133,9 +133,88 @@ SelfAdjointEigenSolver<Matrix<double, Dynamic, Dynamic>> diagonalize(Matrix<doub
   return es;
 }
 
+//TODO copy starting here
+
+Matrix<double, Dynamic, Dynamic> ket2dm(SelfAdjointEigenSolver<Matrix<double, Dynamic, Dynamic> > es, const int& N)
+{
+  return es.eigenvectors().col(0)*es.eigenvectors().col(0).transpose();
+}
+
+Matrix<double, Dynamic, Dynamic> extract2qubitDm(Matrix<double, Dynamic, Dynamic> rho, const int& N)
+{
+  if(N==2)
+    return rho;
+  else
+  {
+    //TODO implement partial trace
+  }
+}
+
+double concurrence(Matrix<double, Dynamic, Dynamic> rho)
+{
+  std::cout << std::endl << rho << std::endl;
+  Matrix<double, Dynamic, Dynamic> copy; // = rho;
+  // Copies rho
+  copy.resize(3, 3);
+  copy.setZero();
+  copy(0, 0) = rho(0, 0);
+  copy(1, 0) = rho(1, 0);
+  copy(2, 0) = rho(2, 0);
+  copy(0, 1) = rho(0, 1);
+  copy(1, 1) = rho(1, 1);
+  copy(2, 1) = rho(2, 1);
+  copy(0, 2) = rho(0, 2);
+  copy(1, 2) = rho(1, 2);
+  copy(2, 2) = rho(2, 2);
+
+  // Applies the sigmay_i tensor sigmay_j to rho 
+  rho.resize(4, 4);
+  rho.setZero();
+  rho(0, 0) = -copy(0, 2);
+  rho(1, 0) = -copy(1, 2);
+  rho(2, 0) = -copy(2, 2);
+  rho(0, 1) = copy(0, 1);
+  rho(1, 1) = copy(1, 1);
+  rho(2, 1) = copy(2, 1);
+  rho(0, 2) = -copy(0, 0);
+  rho(1, 2) = -copy(1, 0);
+  rho(2, 2) = -copy(2, 0);
+  MatrixPower<Matrix<double, Dynamic, Dynamic> > Apow(rho);
+  rho = Apow(2);
+  EigenSolver<Matrix<double, Dynamic, Dynamic> > es;
+  es.compute(rho);
+  auto ev = es.eigenvalues();
+  // Takes the sqrt and sorts the ev since they don't seem
+  // to come out in order every time. Additionally
+  // abs is applied since sometimes numbers close to 0
+  // will be negative, which they of course can't be.
+  std::vector<double> lambdas = {std::sqrt(std::abs(ev(0))),
+				 std::sqrt(std::abs(ev(1))),
+				 std::sqrt(std::abs(ev(2))),
+				 std::sqrt(std::abs(ev(3)))} ;
+  std::sort(lambdas.begin(), lambdas.end());
+  double c = std::max(0., lambdas[3] - lambdas[2] - lambdas[1] - lambdas[0]);
+  if(c == 0)
+  {
+    std::cout << "Look above for rho" << std::endl;
+    //std::cout << "rho" << copy << std::endl << std::endl;
+  }
+  return c;
+}
+
+double calculateConcurrence(SelfAdjointEigenSolver<Matrix<double, Dynamic, Dynamic> > es, const int& N)
+{
+  Matrix<double, Dynamic, Dynamic> rho = ket2dm(es, N);
+  rho = extract2qubitDm(rho, N);
+  double trace = rho.trace();
+  assert(std::abs(trace-1.) < 0.0001);
+  double c = concurrence(rho);
+  return c;
+}
+
 void lambdaOne(const int& p)
 {
-  //Calculates the groundstate energy for lambda=1
+  // Calculates the groundstate energy for lambda=1
   std::vector<double> s_list = linspace(0, 1, 101);
   std::vector<int> N_list = {2, 4, 8, 16, 32, 64, 128, 256};
   std::vector<std::vector<double>> energies;
@@ -163,18 +242,57 @@ void lambdaOne(const int& p)
   {
     std::ostringstream s2;
     s2 << N_list[i] << " Spins";
-    gp.set_style("points").plot_xy(s_list, energies[i], s2.str());
+    gp.set_style("lines").plot_xy(s_list, energies[i], s2.str());
   }
   gp.unset_smooth();
   gp.showonscreen();
   std::cout << "Press Enter to exit." << std::endl;
   // "read" for max linux, "pause" for windows
-  std::system("pause");
+  std::system("read");
+}
+
+void lambdaOneConcurrence(const int& p)
+{
+  // Calculates the rescaled concurrence for lambda=1
+  std::vector<double> s_list = linspace(0, 1, 101);
+  std::vector<int> N_list = {2};
+  std::vector<std::vector<double> > concurrences;
+  for(int N: N_list)
+  {
+    std::cout << "Calculating concurrence" << N << " Spins." << std::endl;
+    std::vector<double> concurrence;
+    for(double s: s_list)
+    {
+      SelfAdjointEigenSolver<Matrix<double, Dynamic, Dynamic> > es;
+      es = diagonalize(H0plusVtf(N, s, p));
+      concurrence.push_back(calculateConcurrence(es, N)*(N-1));
+    }
+    concurrences.push_back(concurrence);
+  }
+  std::cout << "Done." << std::endl;
+  Gnuplot gp("Rescaled concurrence Cr");
+  std::ostringstream s;
+  s << "Energy per Spin ";
+  auto title = s.str();
+  gp.set_title(title);
+  gp.set_xlabel("s");
+  gp.set_ylabel("Cr");
+  for(int i=0; i<N_list.size(); ++i)
+  {
+    std::ostringstream s2;
+    s2 << N_list[i] << " Spins";
+    gp.set_style("lines").plot_xy(s_list, concurrences[i], s2.str());
+  }
+  gp.unset_smooth();
+  gp.showonscreen();
+  std::cout << "Press Enter to exit." << std::endl;
+  // "read" for max linux, "pause" for windows
+  std::system("read");
 }
 
 void lambdaNotOne(const int& p)
 {
-  //Calculates the groundstate energy for lambda=1
+  // Calculates the groundstate energy for lambda!=1
   std::vector<double> s_list = linspace(0, 1, 101);
   std::vector<double> l_list = linspace(0, 1, 6);
   std::vector<int> N_list = {2, 4, 8, 16, 32, 64, 128};
@@ -206,7 +324,7 @@ void lambdaNotOne(const int& p)
     {
       std::ostringstream s2;
       s2 << N_list[i] << " Spins";
-      gp.set_style("points").plot_xy(s_list, energies[i], s2.str());
+      gp.set_style("lines").plot_xy(s_list, energies[i], s2.str());
     }
     gp.unset_smooth();
     gp.showonscreen();
@@ -216,3 +334,46 @@ void lambdaNotOne(const int& p)
   }
 }
 
+void lambdaNotOneConcurrence(const int& p)
+{
+  // Calculates the rescaled concurrence for lambda!=1
+  std::vector<double> s_list = linspace(0, 1, 101);
+  // std::vector<double> l_list = linspace(0, 1, 3);
+  std::vector<double> l_list = {0.5};
+  std::vector<int> N_list = {2};
+  for(double l : l_list)
+  {
+    std::vector<std::vector<double> > concurrences;
+    for(int N: N_list)
+    {
+      std::cout << "Calculating concurrence" << N << " Spins." << std::endl;
+      std::vector<double> concurrence;
+      for(double s: s_list)
+      {
+	SelfAdjointEigenSolver<Matrix<double, Dynamic, Dynamic> > es;
+	es = diagonalize(H0plusVaffplusVtf(N, s, l, p));
+	concurrence.push_back(calculateConcurrence(es, N)*(N-1));
+      }
+      concurrences.push_back(concurrence);
+    }
+    std::cout << "Done." << std::endl;
+    Gnuplot gp("Rescaled concurrence Cr");
+    std::ostringstream s;
+    s << "Rescaled Concurrece for lambda " << l << ".";
+    auto title = s.str();
+    gp.set_title(title);
+    gp.set_xlabel("s");
+    gp.set_ylabel("Cr");
+    for(int i=0; i<N_list.size(); ++i)
+    {
+      std::ostringstream s2;
+      s2 << N_list[i] << " Spins";
+      gp.set_style("points").plot_xy(s_list, concurrences[i], s2.str());
+    }
+    gp.unset_smooth();
+    gp.showonscreen();
+    std::cout << "Press Enter to exit." << std::endl;
+    // "read" for max linux, "pause" for windows
+    std::system("read");
+  }
+}
