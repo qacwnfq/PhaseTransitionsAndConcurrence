@@ -168,6 +168,51 @@ void lambdaOne(const int& p)
   gp.unset_smooth();
   gp.showonscreen();
   std::cout << "Press Enter to exit." << std::endl;
-  double e;
-  std::cin >> e;
+  // "read" for max linux, "pause" for windows
+  std::system("pause");
 }
+
+void lambdaNotOne(const int& p)
+{
+  //Calculates the groundstate energy for lambda=1
+  std::vector<double> s_list = linspace(0, 1, 101);
+  std::vector<double> l_list = linspace(0, 1, 6);
+  std::vector<int> N_list = {2, 4, 8, 16, 32, 64, 128};
+  for(double l : l_list)
+  {
+    std::vector<std::vector<double>> energies;
+    for(int N: N_list)
+    {
+      std::cout << "Calculating " << N << " Spins for lambda "
+		<< l << "." << std::endl;
+      std::vector<double> energy;
+      for(double s: s_list)
+      {
+	SelfAdjointEigenSolver<Matrix<double, Dynamic, Dynamic> > es;
+	es = diagonalize(H0plusVaffplusVtf(N, s, l, p));
+	double ev = es.eigenvalues()(0);
+	energy.push_back(ev/N);
+      }
+      energies.push_back(energy);
+    }
+    std::cout << "Done." << std::endl;
+    Gnuplot gp("Energy per spin");
+    std::ostringstream s;
+    s << "Energy per Spin ";
+    auto title = s.str();
+    gp.set_title(title);
+    gp.set_xlabel("s");
+    for(int i=0; i<N_list.size(); ++i)
+    {
+      std::ostringstream s2;
+      s2 << N_list[i] << " Spins";
+      gp.set_style("points").plot_xy(s_list, energies[i], s2.str());
+    }
+    gp.unset_smooth();
+    gp.showonscreen();
+    std::cout << "Press Enter to exit." << std::endl;
+    // "read" for max linux, "pause" for windows
+    std::system("read");
+  }
+}
+

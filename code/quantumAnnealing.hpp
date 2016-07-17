@@ -36,4 +36,5 @@ Matrix<double, Dynamic, Dynamic> H0plusVaffplusVtf(const int& N, const double& s
 
 SelfAdjointEigenSolver<Matrix<double, Dynamic, Dynamic>> diagonalize(Matrix<double, Dynamic, Dynamic> H);
 void lambdaOne(const int& p);
+void lambdaNotOne(const int& p);
 #endif
