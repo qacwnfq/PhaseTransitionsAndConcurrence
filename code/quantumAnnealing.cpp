@@ -88,9 +88,8 @@ Matrix<double, Dynamic, Dynamic> H0(const int& N, const int& p)
   double S = double(N)/2.;
   Matrix<double, Dynamic, Dynamic> H0 = Sz(N);
   H0 /= S;
-  // Since the matrix is diagonal, the power is taken like this.
-  for(int i=0; i<N+1; ++i)
-    H0(i, i) = std::pow(H0(i, i), p);
+  MatrixPower<Matrix<double, Dynamic, Dynamic> > Apow(H0);
+  H0 = Apow(p);
   H0 *= -N;
   return H0;
 }
@@ -111,8 +110,8 @@ Matrix<double, Dynamic, Dynamic> Vaff(const int& N)
   double S = double(N)/2;
   Matrix<double, Dynamic, Dynamic> Vaff = Sx(N);
   Vaff /= S;
-  // TODO pow doesnt work
-  Vaff = Vaff.pow(2);
+  MatrixPower<Matrix<double, Dynamic, Dynamic> > Apow(Vaff);
+  Vaff = Apow(2);
   Vaff *= N;
   return Vaff;
 }
@@ -138,7 +137,7 @@ void lambdaOne(const int& p)
 {
   //Calculates the groundstate energy for lambda=1
   std::vector<double> s_list = linspace(0, 1, 101);
-  std::vector<int> N_list = {2, 4, 8, 16, 32, 64, 128, 256, 512};
+  std::vector<int> N_list = {2, 4, 8, 16, 32, 64, 128, 256};
   std::vector<std::vector<double>> energies;
   for(int N: N_list)
   {
