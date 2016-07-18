@@ -48,35 +48,6 @@ std::vector<std::vector<double>> create_const(const int& x, const int& y, const 
   return one;
 }
 
-std::set<std::string> zeeman(const int& N, const double& m)
-{
-  // TODO add norm to every string, so we get unit vectors
-  double S = (double)N/2.;
-  std::string s="";
-  // Figures out how many spins should be down.
-  int n = S-m;
-  std::set<std::string> permutations;
-  for(int i=0; i<N-n; ++i)
-  {
-    s += "u";
-  }
-  for(int i=0; i<n; ++i)
-  {
-    s += "d";
-  }
-  // Finds permutations of s but if the string is not sorted,
-  // the next paragraph will not find all permutations.
-  permutations.insert(s);
-  std::sort(s.begin(), s.end());
-  do
-  {
-    permutations.insert(s);
-  }
-  while(std::next_permutation(s.begin(), s.end()));
-
-  return permutations;
-}
-
 int cardaniac(const double& A, const double& B, const double& C, const double& D)
 {
   return 0;
@@ -140,42 +111,14 @@ Matrix<double, Dynamic, Dynamic> ket2dm(SelfAdjointEigenSolver<Matrix<double, Dy
   return es.eigenvectors().col(0)*es.eigenvectors().col(0).transpose();
 }
 
-// Matrix<double, Dynamic, Dynamic> extract2qubitDm(Matrix<double, Dynamic, Dynamic> rho,
-// 						 std::vector<Matrix<double, Dynamic, Dynamic> > zeemanBasis,
-// 						 const int& N)
-// {
-//   if(N==2)
-//   {
-//     // Nothing has to be done for N=2
-//   }
-//   else
-//   {
-//     //TODO implement partial trace
-//     dm partial_rho(rho, zeemanBasis, N);
-//     for(int i=0; i<N-2; ++i)
-//     {
-//       partial_rho = partial_rho.ptrace(0);
-//     }
-//     rho = partial_rho.nparray();
-//   }
-//   return rho;
-// }
-
 Matrix<double, Dynamic, Dynamic> extract2qubitDm(Matrix<double, Dynamic, Dynamic> rho,
-						 std::vector<Matrix<double, Dynamic, Dynamic> > zeemanBasis,
+						 std::vector<std::vector<int> > pascal,
 						 const int& N)
 {
-  if(N==2)
+  for(int i=0; i<N-2; ++i)
   {
-    // Nothing has to be done for N=2
-  }
-  else
-  {
-    // for(int i=0; i<N-2; ++i)
-    // {
-    //   rho = ptrace(rho, 0);
-    // }
-    // //rho = partial_rho.nparray();
+    //ptrace expects spins+1
+    rho = ptrace(rho, pascal, N+1);
   }
   return rho;
 }
@@ -228,11 +171,11 @@ double concurrence(Matrix<double, Dynamic, Dynamic> rho)
 }
 
 double calculateConcurrence(SelfAdjointEigenSolver<Matrix<double, Dynamic, Dynamic> > es,
-			    std::vector<Matrix<double, Dynamic, Dynamic> > zeemanBasis,
+			    std::vector<std::vector<int> > pascal,
 			    const int& N)
 {
   Matrix<double, Dynamic, Dynamic> rho = ket2dm(es, N);
-  rho = extract2qubitDm(rho, zeemanBasis, N);
+  rho = extract2qubitDm(rho, pascal, N);
   double trace = rho.trace();
   assert(std::abs(trace-1.) < 0.0001);
   double c = concurrence(rho);
@@ -284,17 +227,18 @@ void lambdaOneConcurrence(const int& p)
   std::vector<double> s_list = linspace(0, 1, 101);
   std::vector<int> N_list = {2};
   std::vector<std::vector<double> > concurrences;
-  std::vector<Matrix<double, Dynamic, Dynamic> > zeemanBasis;
+  std::vector<std::vector<int> > pascal;
   for(int N: N_list)
   {
-    // TODO calculate zeeman basis once here up until N
+    // TODO calculate pascal triangle once here up until N
+    pascal = pascalTriangle(N);
     std::cout << "Calculating concurrence" << N << " Spins." << std::endl;
     std::vector<double> concurrence;
     for(double s: s_list)
     {
       SelfAdjointEigenSolver<Matrix<double, Dynamic, Dynamic> > es;
       es = diagonalize(H0plusVtf(N, s, p));
-      concurrence.push_back(calculateConcurrence(es, zeemanBasis, N)*(N-1));
+      concurrence.push_back(calculateConcurrence(es, pascal, N)*(N-1));
     }
     concurrences.push_back(concurrence);
   }
@@ -369,7 +313,7 @@ void lambdaNotOneConcurrence(const int& p)
   std::vector<double> s_list = linspace(0, 1, 101);
   std::vector<double> l_list = linspace(0, 1, 6);
   std::vector<int> N_list = {2};
-  std::vector<Matrix<double, Dynamic, Dynamic> > zeemanBasis;
+  std::vector<std::vector<int> > pascal;
   for(double l : l_list)
   {
     std::vector<std::vector<double> > concurrences;
@@ -381,7 +325,7 @@ void lambdaNotOneConcurrence(const int& p)
       {
 	SelfAdjointEigenSolver<Matrix<double, Dynamic, Dynamic> > es;
 	es = diagonalize(H0plusVaffplusVtf(N, s, l, p));
-	concurrence.push_back(calculateConcurrence(es, zeemanBasis, N)*(N-1));
+	concurrence.push_back(calculateConcurrence(es, pascal, N)*(N-1));
       }
       concurrences.push_back(concurrence);
     }

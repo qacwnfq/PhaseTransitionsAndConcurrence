@@ -78,7 +78,7 @@ public:
 };
 
 void zeeman();
-Matrix<double, Dynamic, Dynamic> ptrace(const Matrix<double, Dynamic, Dynamic>& rho, const int& N);
+Matrix<double, Dynamic, Dynamic> ptrace(const Matrix<double, Dynamic, Dynamic>& rho, std::vector<std::vector<int> > pascal, const int& N);
 
 std::vector<std::vector<int> > pascalTriangle(const int& N);
 #endif

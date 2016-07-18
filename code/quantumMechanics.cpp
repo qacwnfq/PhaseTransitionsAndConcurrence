@@ -220,17 +220,37 @@ dm dm::ptrace(const int& k){}
 
 void zeeman(){}
 
-Matrix<double, Dynamic, Dynamic> ptrace(const Matrix<double, Dynamic, Dynamic>& rho, const int& N)
+Matrix<double, Dynamic, Dynamic> ptrace(const Matrix<double, Dynamic, Dynamic>& rho, std::vector<std::vector<int> > pascal, const int& N)
 {
+  //N is spins+1
   Matrix<double, Dynamic, Dynamic> res;
   res.resize(N-1, N-1);
   res.setZero();
-  if(N%2 == 0)
+  std::vector<int> New = pascal[N-2];
+  std::vector<int> Old = pascal[N-1];
+  double temp = 0;
+  // TODO use symmetry to save calculations after its working
+  for(int i=0; i<N; ++i)
   {
-    
-  }
-  else
-  {
+    for(int j=0; j<N; ++j)
+    {
+      double factor = std::sqrt(Old[i]);
+      factor*= std::sqrt(Old[j]);
+      if((i < N-1) and (j < N-1))
+      {	
+      	temp = rho(i, j) / factor;
+      	temp *= std::sqrt(New[i]);
+      	temp *= std::sqrt(New[j]);
+	res(i, j) += temp;
+      }
+      if((i > 0) and (j > 0))
+      {
+      	temp = rho(i, j) / factor;
+      	temp *= std::sqrt(New[i-1]);
+      	temp *= std::sqrt(New[j-1]);
+	res(i-1, j-1) += temp;
+      }
+    }
   }
   return res;
 }
