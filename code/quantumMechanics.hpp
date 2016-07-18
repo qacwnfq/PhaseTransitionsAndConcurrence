@@ -37,6 +37,7 @@ public:
   double getNorm() const;
   double scalar_product(const state& other) const;
   ketBra tensor_product(const state& other) const;
+  int size() const;
   state operator+(const state& other) const;
   bool operator==(const state& other) const;
 };
@@ -77,5 +78,7 @@ public:
 };
 
 void zeeman();
+Matrix<double, Dynamic, Dynamic> ptrace(const Matrix<double, Dynamic, Dynamic>& rho, const int& N);
 
+std::vector<std::vector<int> > pascalTriangle(const int& N);
 #endif

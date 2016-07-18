@@ -140,6 +140,27 @@ Matrix<double, Dynamic, Dynamic> ket2dm(SelfAdjointEigenSolver<Matrix<double, Dy
   return es.eigenvectors().col(0)*es.eigenvectors().col(0).transpose();
 }
 
+// Matrix<double, Dynamic, Dynamic> extract2qubitDm(Matrix<double, Dynamic, Dynamic> rho,
+// 						 std::vector<Matrix<double, Dynamic, Dynamic> > zeemanBasis,
+// 						 const int& N)
+// {
+//   if(N==2)
+//   {
+//     // Nothing has to be done for N=2
+//   }
+//   else
+//   {
+//     //TODO implement partial trace
+//     dm partial_rho(rho, zeemanBasis, N);
+//     for(int i=0; i<N-2; ++i)
+//     {
+//       partial_rho = partial_rho.ptrace(0);
+//     }
+//     rho = partial_rho.nparray();
+//   }
+//   return rho;
+// }
+
 Matrix<double, Dynamic, Dynamic> extract2qubitDm(Matrix<double, Dynamic, Dynamic> rho,
 						 std::vector<Matrix<double, Dynamic, Dynamic> > zeemanBasis,
 						 const int& N)
@@ -150,16 +171,15 @@ Matrix<double, Dynamic, Dynamic> extract2qubitDm(Matrix<double, Dynamic, Dynamic
   }
   else
   {
-    //TODO implement partial trace
-    dm partial_rho(rho, zeemanBasis, N);
-    for(int i=0; i<N-2; ++i)
-    {
-      partial_rho = partial_rho.ptrace(0);
-    }
-    rho = partial_rho.nparray();
+    // for(int i=0; i<N-2; ++i)
+    // {
+    //   rho = ptrace(rho, 0);
+    // }
+    // //rho = partial_rho.nparray();
   }
   return rho;
 }
+
 
 double concurrence(Matrix<double, Dynamic, Dynamic> rho)
 {

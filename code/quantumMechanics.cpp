@@ -123,6 +123,10 @@ state state::operator+(const state& other) const
 			   std::end(other.quantumState));
   return copy;
 }
+int state::size() const
+{
+  return this->quantumState.size();
+}
 bool state::operator==(const state& other) const
 {
   bool result = false;
@@ -133,8 +137,12 @@ bool state::operator==(const state& other) const
 std::ostream& operator<<(std::ostream& os, const state& other)
 {
   std::string ret;
-  for(auto v: other.quantumState)
-    ret += v;
+  for(int i=0; i < other.quantumState.size(); ++i)
+  {
+    ret += other.quantumState[i];
+    if(i < other.quantumState.size() - 1)
+      ret += "+";
+  }
   return os << ret;
 };
 
@@ -176,16 +184,23 @@ bool ketBra::operator==(const ketBra& other)
 }
 std::ostream& operator<<(std::ostream& os, const ketBra& other)
 {
-  if(other.amplitude == 1)
-  {
-    return os << "|" << other.tket << "><" << other.tbra <<"|";
-  }
-  else if(other.amplitude != 0.)
-  {
-    return os << other.amplitude << "|" << other.tket << "><" << other.tbra <<"|";
-  }
-  else
-    return os << 0;
+  for(int i=0; i < other.tket.size(); ++i)
+    for(int j=0; i < other.tbra.size(); ++i)
+    {
+      {
+	if(other.amplitude == 1)
+	{
+	  os << "+" << "|" << other.tket.quantumState[i] << "><" << other.tbra.quantumState[j] <<"|";
+	}
+	else if(other.amplitude != 0.)
+        {
+	  os << "+" << other.amplitude << "|" << other.tket.quantumState[i] << "><" << other.tbra.quantumState[j] <<"|";
+	}
+	else
+	  return os << "+" << 0;
+      }
+    }
+  return os;
 }
 
 
@@ -204,3 +219,41 @@ Matrix<double, Dynamic, Dynamic> dm::nparray(){}
 dm dm::ptrace(const int& k){}
 
 void zeeman(){}
+
+Matrix<double, Dynamic, Dynamic> ptrace(const Matrix<double, Dynamic, Dynamic>& rho, const int& N)
+{
+  Matrix<double, Dynamic, Dynamic> res;
+  res.resize(N-1, N-1);
+  res.setZero();
+  if(N%2 == 0)
+  {
+    
+  }
+  else
+  {
+  }
+  return res;
+}
+
+std::vector<std::vector<int> > pascalTriangle(const int& N)
+{
+  // Calculates pascal triangle up to N spins which means N+1 lines
+  // in O(N^2). Be careful of integerowerflow though
+  std::vector<std::vector<int> > triangle;
+  // Starts at line 0 even if its not necessary because
+  // this leads to the vector index being equal to the
+  // number of spins.
+  for(int line=0; line<N+1; line++)
+    {
+      int C = 1;
+      std::vector<int> lin;
+      for(int i=1; i<line+2; i++)
+    {
+      lin.push_back(C);
+      C = C*(line -i + 1)/i;
+    }
+    triangle.push_back(lin);
+  }
+
+  return triangle;
+}
