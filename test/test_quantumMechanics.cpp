@@ -132,7 +132,7 @@ BOOST_AUTO_TEST_CASE(test_ptrace)
   expected(0, 1) = 1/std::sqrt(2)*(rho(0, 1)+rho(1, 2));
   expected(1, 0) = 1/std::sqrt(2)*(rho(1, 0)+rho(2, 1));
   expected(1, 1) = rho(2, 2) + rho(1, 1)/2;
-  std::vector<std::vector<int> > pascal = pascalTriangle(N);
+  std::vector<std::vector<unsigned long long int> > pascal = pascalTriangle(N);
   Matrix<double, Dynamic, Dynamic> actual;
   actual = ptrace(rho, pascal, N+1);
   BOOST_CHECK(expected.isApprox(actual, 0.0001));
