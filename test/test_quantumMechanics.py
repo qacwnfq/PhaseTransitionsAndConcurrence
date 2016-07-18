@@ -257,3 +257,31 @@ def test_dm():
     print(actual)
     print(expected)
     np.testing.assert_almost_equal(actual, expected)
+
+    # # 3) case
+    # rho = np.zeros(shape=(4, 4))
+    # numbers = [[1, 2, 3, 4], [5, 6, 7, 8], [9, 10, 11, 12],
+    #            [13, 14, 15, 16]]
+    # for i in range(4):
+    #     for j in range(4):
+    #         rho[i][j] = numbers[i][j]
+    # actual = dm(rho, 3)
+    # actual = actual.ptrace(0)
+    # actual = actual.nparray()
+    # expected = np.zeros(shape=(3, 3))
+    # expected[0][0] = rho[0][0] + rho[1][1]/3
+    # expected[1][1] = 2/3*(rho[1][1] + rho[2][2])
+    # expected[2][2] = rho[3][3] + rho[2][2]/3
+
+    # expected[0][1] = rho[0][1] + rho[1][2]/2
+    # expected[0][2] = rho[0][2] + rho
+
+    # expected[1][0] =
+    # expected[1][2] =
+
+    # expected[2][0] =
+    # expected[2][1] =
+
+    # print(actual)
+    # print(expected)
+    # np.testing.assert_almost_equal(actual, expected)

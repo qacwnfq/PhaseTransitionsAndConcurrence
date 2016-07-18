@@ -23,3 +23,5 @@ Matrix<double, Dynamic, Dynamic> ptrace(const Matrix<double, Dynamic, Dynamic>& 
 
 std::vector<std::vector<int> > pascalTriangle(const int& N);
 #endif
+
+std::vector<std::vector<int> > pascalTriangle(const int& prev, const int& N);

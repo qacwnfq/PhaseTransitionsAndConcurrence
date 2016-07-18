@@ -138,3 +138,26 @@ std::vector<std::vector<int> > pascalTriangle(const int& N)
 
   return triangle;
 }
+
+std::vector<std::vector<int> > pascalTriangle(const int& prev, const int& N)
+{
+  // Calculates pascal triangle up to N spins starting from line prev which means N+1 lines
+  // in O(N^2). Be careful of integerowerflow though
+  std::vector<std::vector<int> > triangle;
+  // Starts at line 0 even if its not necessary because
+  // this leads to the vector index being equal to the
+  // number of spins.
+  for(int line=prev; line<N+1; line++)
+    {
+      int C = 1;
+      std::vector<int> lin;
+      for(int i=1; i<line+2; i++)
+    {
+      lin.push_back(C);
+      C = C*(line -i + 1)/i;
+    }
+    triangle.push_back(lin);
+  }
+
+  return triangle;
+}
