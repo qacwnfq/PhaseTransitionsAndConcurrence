@@ -124,83 +124,6 @@ BOOST_AUTO_TEST_CASE(test_Sz)
   BOOST_CHECK(expected2 == actual);
 }
 
-BOOST_AUTO_TEST_CASE(test_state_scalar_product)
-{
-  state s1("uu");
-  state s2("dd");
-  double expected;
-  double actual;
-
-  expected = 0;
-  actual = s1.scalar_product(s2);
-  BOOST_CHECK(expected == actual);
-  expected = 1;
-  actual = s1.scalar_product(s1);
-  BOOST_CHECK(expected == actual);
-}
-
-BOOST_AUTO_TEST_CASE(test_state_tensor_product)
-{
-  state s1("u");
-  state s2("d");
-  ketBra expected(s1, s2);
-  ketBra actual = s1.tensor_product(s2);
-  BOOST_CHECK(actual == expected);
-}
-
-
-BOOST_AUTO_TEST_CASE(test_state_operator_plus)
-{
-  state s1("uu");
-  state s2("dd");
-  std::vector<std::string> sum = {"uu", "dd"};
-  state expected(sum);
-  double expectedNorm = std::sqrt(2);
-  state actual = s1 + s2;
-  double actualNorm = actual.getNorm();
-  BOOST_CHECK(s1 == state("uu"));
-  BOOST_CHECK(expected == actual);
-  BOOST_CHECK(expectedNorm == actualNorm);
-}
-
-
-BOOST_AUTO_TEST_CASE(test_state_operator_eq)
-{
-  state s1("uu");
-  state s2("dd");
-  bool expected;
-  bool actual;
-
-  expected= false;
-  actual = (s1==s2);
-  BOOST_CHECK(expected == actual);
-
-  expected= true;
-  actual = (s1==s1);
-  BOOST_CHECK(expected == actual);
-}
-
-BOOST_AUTO_TEST_CASE(test_ketbra_multiply_with)
-{
-  state s1("uu");
-  state s2("dd");
-  ketBra expected;
-  ketBra actual;
-  
-  ketBra kb1(s1, s1);
-  ketBra kb2(s1, s2);
-  ketBra kb3(s2, s2);
-  expected = ketBra(s1, s2);
-  actual = kb1.multiply_with(kb2);
-  BOOST_CHECK(expected == actual);
-  expected = ketBra();
-  actual = kb1.multiply_with(kb3);
-  BOOST_CHECK(expected == actual);
-
-  state s3 = s1+s2;
-  actual = ketBra(s3, s3);
-}
-
 
 BOOST_AUTO_TEST_CASE(test_ptrace)
 {
@@ -218,7 +141,5 @@ BOOST_AUTO_TEST_CASE(test_ptrace)
   std::vector<std::vector<int> > pascal = pascalTriangle(N);
   Matrix<double, Dynamic, Dynamic> actual;
   actual = ptrace(rho, pascal, N+1);
-  std::cout << "ptrace" << std::endl;
-  std::cout << actual << std::endl;
   BOOST_CHECK(expected.isApprox(actual, 0.0001));
 }
