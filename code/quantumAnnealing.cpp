@@ -115,10 +115,12 @@ Matrix<double, Dynamic, Dynamic> extract2qubitDm(Matrix<double, Dynamic, Dynamic
 						 std::vector<std::vector<int> > pascal,
 						 const int& N)
 {
+  int SpinsPlusOne = N+1;
   for(int i=0; i<N-2; ++i)
   {
     //ptrace expects spins+1
-    rho = ptrace(rho, pascal, N+1);
+    rho = ptrace(rho, pascal, SpinsPlusOne);
+    SpinsPlusOne--;
   }
   return rho;
 }
@@ -225,14 +227,14 @@ void lambdaOneConcurrence(const int& p)
 {
   // Calculates the rescaled concurrence for lambda=1
   std::vector<double> s_list = linspace(0, 1, 101);
-  std::vector<int> N_list = {2};
+  std::vector<int> N_list = {2, 3, 4};
   std::vector<std::vector<double> > concurrences;
-  std::vector<std::vector<int> > pascal;
+  std::vector<std::vector<int> > pascal, temp;
   for(int N: N_list)
   {
-    // TODO calculate pascal triangle once here up until N
-    pascal = pascalTriangle(N);
-    std::cout << "Calculating concurrence" << N << " Spins." << std::endl;
+    temp = pascalTriangle(pascal.size(), N);
+    pascal.insert(pascal.end(), temp.begin(), temp.end());
+    std::cout << "Calculating concurrence " << N << " Spins." << std::endl;
     std::vector<double> concurrence;
     for(double s: s_list)
     {
