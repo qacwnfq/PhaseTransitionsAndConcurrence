@@ -34,9 +34,10 @@ Matrix<double, Dynamic, Dynamic> Vaff(const int& N);
 Matrix<double, Dynamic, Dynamic> H0plusVtf(const int& N, const double& s, const int& p);
 Matrix<double, Dynamic, Dynamic> H0plusVaffplusVtf(const int& N, const double& s, const double& l, const int& p);
 Matrix<double, Dynamic, Dynamic> ket2dm(SelfAdjointEigenSolver<Matrix<double, Dynamic, Dynamic> > es, const int& N);
-Matrix<double, Dynamic, Dynamic> extract2qubitDm(Matrix<double, Dynamic, Dynamic> rho, std::vector<std::vector<int> > pascal, const int& N);
+Matrix<double, Dynamic, Dynamic> extract2qubitDm(Matrix<double, Dynamic, Dynamic> rho, std::vector<std::vector<unsigned long long int> > pascal, const int& N);
 double concurrence(Matrix<double, Dynamic, Dynamic> rho);
-double calculateConcurrence(SelfAdjointEigenSolver<Matrix<double, Dynamic, Dynamic> > es, const int& N);
+
+double calculateConcurrence(SelfAdjointEigenSolver<Matrix<double, Dynamic, Dynamic> > es, std::vector<std::vector<unsigned long long int> > pascal, const int& N);
 
 SelfAdjointEigenSolver<Matrix<double, Dynamic, Dynamic>> diagonalize(Matrix<double, Dynamic, Dynamic> H);
 void lambdaOne(const int& p);

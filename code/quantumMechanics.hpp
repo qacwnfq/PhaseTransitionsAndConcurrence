@@ -19,9 +19,9 @@ double mSzn(const double& m, const double& n, const double& S);
 Matrix<double, Dynamic, Dynamic> Sx(const int& N);
 Matrix<double, Dynamic, Dynamic> Sz(const int& N);
 
-Matrix<double, Dynamic, Dynamic> ptrace(const Matrix<double, Dynamic, Dynamic>& rho, std::vector<std::vector<int> > pascal, const int& N);
+Matrix<double, Dynamic, Dynamic> ptrace(const Matrix<double, Dynamic, Dynamic>& rho, std::vector<std::vector<unsigned long long int> > pascal, const int& N);
 
-std::vector<std::vector<int> > pascalTriangle(const int& N);
+std::vector<std::vector<unsigned long long int> > pascalTriangle(const int& N);
 #endif
 
-std::vector<std::vector<int> > pascalTriangle(const int& prev, const int& N);
+std::vector<std::vector<unsigned long long int> > pascalTriangle(const int& prev, const int& N);

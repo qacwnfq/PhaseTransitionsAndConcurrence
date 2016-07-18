@@ -307,7 +307,7 @@ def calculateConcurrenceInLimit(s, l, p=P):
 def lambdaOne():
     """Calculates the groundstate energy for lambda=1"""
     s_list = np.linspace(0, 1, 1001)
-    N_list = [2, 4, 8, 16, 64, 128, 256]
+    N_list = [2, 4, 8, 16, 32, 62]
     energies = {}
     for N in N_list:
         print(N)
@@ -332,7 +332,7 @@ def lambdaOne():
 def lambdaOneGap():
     """Calculates the energy Gap for lambda=1"""
     s_list = np.linspace(0, 1, 1001)
-    N_list = [2, 4, 8, 16, 64, 128, 256]
+    N_list = [2, 4, 8, 16, 32, 62]
     energies = {}
     for N in N_list:
         print(N)
@@ -349,7 +349,7 @@ def lambdaOneGap():
         plt.plot(s_list, energies[N], label=str(N) + " spins")
     # Figure out classical gap size
     # plt.plot(s_list, energies["oo"], label="Classical Large N Limit")
-    plt.title("Gapsize g per spin")
+    plt.title("Gapsize g for p=" + str(P))
     plt.xlabel("s")
     plt.ylabel("g")
     plt.legend()
@@ -359,7 +359,7 @@ def lambdaOneGap():
 def lambdaOneConcurrence():
     """ Calculates the concurrence for lambda=1"""
     s_list = np.linspace(0, 1, 101)
-    N_list = [i for i in range(12, 13)]
+    N_list = [i for i in range(2, 4)]
     concurrence = {}
     concurrenceLimit = []
     concurrence3 = {}
@@ -399,7 +399,7 @@ def lambdaOneConcurrence():
 def lambdaNotOne():
     """ Calculates the groundstate energy for lambda!=1"""
     s_list = np.linspace(0, 1, 1001)
-    N_list = [2, 4, 8, 16, 64, 128, 256]
+    N_list = [2, 4, 8, 16, 32, 62]
     l_list = np.linspace(0, 1, 11)
     for l in l_list:
         energies = {}
@@ -416,7 +416,8 @@ def lambdaNotOne():
         for N in N_list:
             plt.plot(s_list, energies[N], label=str(N))
         plt.plot(s_list, energies["oo"], label="inf")
-        plt.title("Groundstate energy e0 per Spin for lambda=" + str(l))
+        plt.title("Groundstate energy e0 per Spin for p= " +
+                  str(P) + " and lambda=" + str(l))
         plt.xlabel("s")
         plt.ylabel("e0")
         plt.legend(bbox_to_anchor=(1.05, 1), loc=2, borderaxespad=0.)
@@ -427,7 +428,7 @@ def lambdaNotOne():
 def lambdaNotOneGap():
     """ Calculates the energy Gap for lambda!=1"""
     s_list = np.linspace(0, 1, 1001)
-    N_list = [2, 4, 8, 16, 64, 128, 256]
+    N_list = [2, 4, 8, 16, 32, 62]
     l_list = np.linspace(0, 1, 11)
     for l in l_list:
         energies = {}
@@ -445,7 +446,7 @@ def lambdaNotOneGap():
         for N in N_list:
             plt.plot(s_list, energies[N], label=str(N))
         plt.plot(s_list, energies["oo"], label="inf")
-        plt.title("Gap g for p=5 and lambda=" + str(l))
+        plt.title("Gap g for p=" + str(P) + " and lambda=" + str(l))
         plt.xlabel("s")
         plt.ylabel("g")
         plt.legend(bbox_to_anchor=(1.05, 1), loc=2, borderaxespad=0.)
@@ -574,12 +575,36 @@ def lambdaNotOne2Spins():
         plt.cla()
 
 
+def getConcurrenceLimit(l):
+    s_list = np.linspace(0, 1, 501)
+    concurrenceLimit = []
+    for s in s_list:
+        concurrenceLimit.append(max(0, calculateConcurrenceInLimit(
+            s, l, p=P)))
+    title = ("../results/concurrence/p7/lambda" + str(l) +
+             "limit.csv")
+    resultdf = pd.DataFrame()
+    try:
+        resultdf = pd.DataFrame.from_csv(title)
+    except:
+        pass
+    resultdf["s"] = s_list
+    resultdf["cR"] = concurrenceLimit
+    resultdf.to_csv(title)
+
+
 if __name__ == "__main__":
     # lambdaOne()
-    # lambdaNotOne()
+    lambdaNotOne()
     # lambdaOne2Spins()
     # lambdaNotOne2Spins()
     # lambdaOneGap()
-    # lambdaNotOneGap()
-    lambdaOneConcurrence()
+    lambdaNotOneGap()
+    # lambdaOneConcurrence()
+    # l_list = np.linspace(0., 1, 6)
+    # for l in l_list:
+    #     print(l)
+    #     if l == 0:
+    #         continue
+    #     getConcurrenceLimit(l)
     # lambdaNotOneConcurrence()

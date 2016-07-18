@@ -81,14 +81,14 @@ Matrix<double, Dynamic, Dynamic> Sz(const int& N)
 }
 
 
-Matrix<double, Dynamic, Dynamic> ptrace(const Matrix<double, Dynamic, Dynamic>& rho, std::vector<std::vector<int> > pascal, const int& N)
+Matrix<double, Dynamic, Dynamic> ptrace(const Matrix<double, Dynamic, Dynamic>& rho, std::vector<std::vector<unsigned long long int> > pascal, const int& N)
 {
   //N is spins+1
   Matrix<double, Dynamic, Dynamic> res;
   res.resize(N-1, N-1);
   res.setZero();
-  std::vector<int> New = pascal[N-2];
-  std::vector<int> Old = pascal[N-1];
+  std::vector<unsigned long long int> New = pascal[N-2];
+  std::vector<unsigned long long int> Old = pascal[N-1];
   double temp = 0;
   // TODO use symmetry to save calculations after its working
   for(int i=0; i<N; ++i)
@@ -116,18 +116,18 @@ Matrix<double, Dynamic, Dynamic> ptrace(const Matrix<double, Dynamic, Dynamic>& 
   return res;
 }
 
-std::vector<std::vector<int> > pascalTriangle(const int& N)
+std::vector<std::vector<unsigned long long int> > pascalTriangle(const int& N)
 {
   // Calculates pascal triangle up to N spins which means N+1 lines
   // in O(N^2). Be careful of integerowerflow though
-  std::vector<std::vector<int> > triangle;
+  std::vector<std::vector<unsigned long long int> > triangle;
   // Starts at line 0 even if its not necessary because
   // this leads to the vector index being equal to the
   // number of spins.
   for(int line=0; line<N+1; line++)
     {
-      int C = 1;
-      std::vector<int> lin;
+      unsigned long long int C = 1;
+      std::vector<unsigned long long int> lin;
       for(int i=1; i<line+2; i++)
     {
       lin.push_back(C);
@@ -139,18 +139,18 @@ std::vector<std::vector<int> > pascalTriangle(const int& N)
   return triangle;
 }
 
-std::vector<std::vector<int> > pascalTriangle(const int& prev, const int& N)
+std::vector<std::vector<unsigned long long int> > pascalTriangle(const int& prev, const int& N)
 {
   // Calculates pascal triangle up to N spins starting from line prev which means N+1 lines
   // in O(N^2). Be careful of integerowerflow though
-  std::vector<std::vector<int> > triangle;
+  std::vector<std::vector<unsigned long long int> > triangle;
   // Starts at line 0 even if its not necessary because
   // this leads to the vector index being equal to the
   // number of spins.
   for(int line=prev; line<N+1; line++)
     {
-      int C = 1;
-      std::vector<int> lin;
+      unsigned long long int C = 1;
+      std::vector<unsigned long long int> lin;
       for(int i=1; i<line+2; i++)
     {
       lin.push_back(C);
