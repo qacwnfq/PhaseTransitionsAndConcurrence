@@ -192,13 +192,33 @@ BOOST_AUTO_TEST_CASE(test_ketbra_multiply_with)
   ketBra kb3(s2, s2);
   expected = ketBra(s1, s2);
   actual = kb1.multiply_with(kb2);
-  std::cout << expected << std::endl;
-  std::cout << actual << std::endl;
   BOOST_CHECK(expected == actual);
   expected = ketBra();
   actual = kb1.multiply_with(kb3);
-  std::cout << expected << std::endl;
-  std::cout << actual << std::endl;
   BOOST_CHECK(expected == actual);
+
+  state s3 = s1+s2;
+  actual = ketBra(s3, s3);
 }
 
+
+BOOST_AUTO_TEST_CASE(test_ptrace)
+{
+  int N = 2;
+  Matrix3d rho;
+  rho << 1, 2, 3, 4, 5, 6, 7, 8, 9;
+  std::cout << rho << std::endl;
+  Matrix2d expected;
+  expected(0, 0) = rho(0, 0) + rho(1, 1)/2;
+  expected(0, 1) = 1/std::sqrt(2)*(rho(0, 1)+rho(1, 2));
+  expected(1, 0) = 1/std::sqrt(2)*(rho(1, 0)+rho(2, 1));
+  expected(1, 1) = rho(2, 2) + rho(1, 1)/2;
+  std::cout << expected << std::endl;
+  
+  std::vector<std::vector<int> > pascal = pascalTriangle(N);
+  Matrix<double, Dynamic, Dynamic> actual;
+  actual = ptrace(rho, pascal, N+1);
+  std::cout << "ptrace" << std::endl;
+  std::cout << actual << std::endl;
+  BOOST_CHECK(expected.isApprox(actual, 0.0001));
+}
