@@ -3,13 +3,15 @@
 // C++ port of quantum annealing python script.
 
 #include <Eigen/Core>
+#include <gmpxx.h>
 #include <vector>
 
 #ifndef QUANTUMANNEALING_H
 #define QUANTUMANNEALING_H
 
-typedef unsigned int long long BigInteger;
-
+//typedef mpz_class BigInteger;
+//typedef __int128 BigInteger;
+typedef long double BigInteger;
 
 std::vector<double> gen_m(const int& N);
 int kronecker(const double& m, const double& n);
