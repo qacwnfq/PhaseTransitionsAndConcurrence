@@ -10,10 +10,8 @@
 #include <unsupported/Eigen/MatrixFunctions>
 #include <fstream>
 #include <iostream>
-#include <set>
 #include <sstream>
 #include <string>
-#include <tuple>
 #include <vector>
 
 #include "/home/fredrik/repos/gnuplot-cpp/gnuplot_i.hpp"
@@ -21,9 +19,12 @@
 
 using namespace Eigen;
 
+// TODO add typedef
+
 template<typename T>
 std::vector<double> linspace(const T& s, const T& e, const int& n)
 {
+  // This is a useful template to recreate numpys linspace from python
   double start = static_cast<double>(s);
   double end = static_cast<double>(e);
   double num = static_cast<double>(n);
@@ -38,62 +39,30 @@ std::vector<double> linspace(const T& s, const T& e, const int& n)
   return linspaced;
 }
 
-std::vector<std::vector<double>> create_const(const int& x, const int& y, const double& c)
-{
-  std::vector<std::vector<double>> one(x);
-  for(auto &k : one)
-  {
-    k = std::vector<double>(y, c);
-  }
-  return one;
-}
-
-int cardaniac(const double& A, const double& B, const double& C, const double& D)
-{
-  return 0;
-}
-
-std::vector<double> readLimit()
-{
-  std::string title = "../results/concurrence/p5/lambda1limit.csv";
-  std::ifstream file;
-  file.open(title);
-  std::vector<double> result;
-  std::string line;
-
-  double c, c1, c2;
-  // skip first line
-  getline(file, line);
-  while(std::getline(file, line))
-  {
-    std::stringstream  lineStream(line);
-    std::string        cell;
-    while(std::getline(lineStream, cell, ','))
-    {
-      c = std::stod(cell);
-    }
-    result.push_back(c);
-  }
-  file.close();
-  return result;
-}
 
 std::vector<double> readLimit(std::string title)
 {
+  // Reads the limit for concurrence
+  // which the python script quantumAnnealing.py
+  // calculates into a vector.
   std::ifstream file;
   file.open(title);
   std::vector<double> result;
   std::string line;
 
-  double c, c1, c2;
-  // skip first line
+  double c;
+  // Skips header line
   getline(file, line);
   while(std::getline(file, line))
   {
+    // Reads line
     std::stringstream  lineStream(line);
     std::string        cell;
     while(std::getline(lineStream, cell, ','))
     {
+      // Reads every cell in a line.
+      // The concurrence values are
+      // stored in the last cell.
       c = std::stod(cell);
     }
     result.push_back(c);
@@ -105,7 +74,7 @@ std::vector<double> readLimit(std::string title)
 
 Matrix<double, Dynamic, Dynamic> H0(const int& N, const int& p)
 {
-  assert(N > 0);
+  // Returns matrix representation of the target Hamiltonian H0
   double S = double(N)/2.;
   Matrix<double, Dynamic, Dynamic> H0 = Sz(N);
   H0 /= S;
@@ -117,7 +86,7 @@ Matrix<double, Dynamic, Dynamic> H0(const int& N, const int& p)
 
 Matrix<double, Dynamic, Dynamic> Vtf(const int& N)
 {
-  assert(N > 0);
+  // Returns matrix representation of the transverse field Vtf
   double S = double(N)/2;
   Matrix<double, Dynamic, Dynamic> Vtf = Sx(N);
   Vtf /= S;
@@ -127,7 +96,7 @@ Matrix<double, Dynamic, Dynamic> Vtf(const int& N)
 
 Matrix<double, Dynamic, Dynamic> Vaff(const int& N)
 {
-  assert(N > 0);
+  // Returns matrix representation of the antiferromagnetic term Vaff
   double S = double(N)/2;
   Matrix<double, Dynamic, Dynamic> Vaff = Sx(N);
   Vaff /= S;
@@ -149,8 +118,7 @@ Matrix<double, Dynamic, Dynamic> H0plusVaffplusVtf(const int& N, const double& s
 
 SelfAdjointEigenSolver<Matrix<double, Dynamic, Dynamic>> diagonalize(Matrix<double, Dynamic, Dynamic> H)
 {
-  // BE VERY CAREFUL, THIS ONLY WORKS FOR SELF ADJOINT MATRICES,
-  // WHICH THE HAMILTONIAN IS OF COUSE.
+  // Uses the fact, that the hamiltonian is selfadjoint.
   SelfAdjointEigenSolver<Matrix<double, Dynamic, Dynamic>> es;
   es.compute(H);
   return es;
@@ -158,17 +126,21 @@ SelfAdjointEigenSolver<Matrix<double, Dynamic, Dynamic>> diagonalize(Matrix<doub
 
 Matrix<double, Dynamic, Dynamic> ket2dm(SelfAdjointEigenSolver<Matrix<double, Dynamic, Dynamic> > es, const int& N)
 {
+  // Takes a ket and creates a density matrix from it.
   return es.eigenvectors().col(0)*es.eigenvectors().col(0).transpose();
 }
 
-Matrix<double, Dynamic, Dynamic> extract2qubitDm(Matrix<double, Dynamic, Dynamic> rho,
+Matrix<double, Dynamic, Dynamic> extract2particleDm(Matrix<double, Dynamic, Dynamic> rho,
 						 std::vector<std::vector<unsigned long long int> > pascal,
 						 const int& N)
 {
+  // Takes a density matrix in zee man basis and
+  // traces out all particles expect for 2.
   int SpinsPlusOne = N+1;
   for(int i=0; i<N-2; ++i)
   {
-    //ptrace expects spins+1
+    // ptrace() expects spins+1 to know
+    // the size of rho ((N+1)x(N+1))
     rho = ptrace(rho, pascal, SpinsPlusOne);
     SpinsPlusOne--;
   }
@@ -178,23 +150,12 @@ Matrix<double, Dynamic, Dynamic> extract2qubitDm(Matrix<double, Dynamic, Dynamic
 
 double concurrence(Matrix<double, Dynamic, Dynamic> rho)
 {
-  Matrix<double, Dynamic, Dynamic> copy; // = rho;
-  // Copies rho
-  copy.resize(3, 3);
-  copy.setZero();
-  copy(0, 0) = rho(0, 0);
-  copy(1, 0) = rho(1, 0);
-  copy(2, 0) = rho(2, 0);
-  copy(0, 1) = rho(0, 1);
-  copy(1, 1) = rho(1, 1);
-  copy(2, 1) = rho(2, 1);
-  copy(0, 2) = rho(0, 2);
-  copy(1, 2) = rho(1, 2);
-  copy(2, 2) = rho(2, 2);
-
-  // Applies the sigmay_i tensor sigmay_j to rho 
+  // Calculates concurrence for a 2 particle
+  // density matrix in the zeeman basis.
+  Matrix<double, Dynamic, Dynamic> copy = rho;
   rho.resize(4, 4);
   rho.setZero();
+  // Applies the sigmay_i tensor sigmay_j to rho 
   rho(0, 0) = -copy(0, 2);
   rho(1, 0) = -copy(1, 2);
   rho(2, 0) = -copy(2, 2);
@@ -204,19 +165,23 @@ double concurrence(Matrix<double, Dynamic, Dynamic> rho)
   rho(0, 2) = -copy(0, 0);
   rho(1, 2) = -copy(1, 0);
   rho(2, 2) = -copy(2, 0);
+
+  // Calculates R matrix and store it in rho variable.
   MatrixPower<Matrix<double, Dynamic, Dynamic> > Apow(rho);
   rho = Apow(2);
+  // Uses the regular eigensolver here,
+  // because the R matrix is not selfadjoint.
   EigenSolver<Matrix<double, Dynamic, Dynamic> > es;
   es.compute(rho);
   auto ev = es.eigenvalues();
-  // Takes the sqrt and sorts the ev since they don't seem
-  // to come out in order every time. Additionally
-  // abs is applied since sometimes numbers close to 0
-  // will be negative, which they of course can't be.
+  // Applies std::abs() before taking the sqrt to avoid
+  // complex numbers. When the eigenvalues are close to 0
+  // the floating point precision will sometimes lead to
+  // negative values, while they should actually be zero.
   std::vector<double> lambdas = {std::sqrt(std::abs(ev(0))),
 				 std::sqrt(std::abs(ev(1))),
 				 std::sqrt(std::abs(ev(2))),
-				 std::sqrt(std::abs(ev(3)))} ;
+				 std::sqrt(std::abs(ev(3)))};
   std::sort(lambdas.begin(), lambdas.end());
   double c = std::max(0., lambdas[3] - lambdas[2] - lambdas[1] - lambdas[0]);
   return c;
@@ -227,8 +192,9 @@ double calculateConcurrence(SelfAdjointEigenSolver<Matrix<double, Dynamic, Dynam
 			    const int& N)
 {
   Matrix<double, Dynamic, Dynamic> rho = ket2dm(es, N);
-  rho = extract2qubitDm(rho, pascal, N);
+  rho = extract2particleDm(rho, pascal, N);
   double trace = rho.trace();
+  // This assert protects from integer overflow.
   assert(std::abs(trace-1.) < 0.0001);
   double c = concurrence(rho);
   return c;
@@ -308,10 +274,12 @@ void lambdaOneConcurrence(const int& p)
     std::ostringstream s2;
     s2 << N_list[i] << " Spins";
     gp.set_style("lines").plot_xy(s_list, concurrences[i], s2.str());
-    // std::cout << "Press enter for next line" << std::endl;
-    // std::system("read");
   }
-  std::vector<double> limit = readLimit();
+
+  title = ("../results/concurrence/p" + std::to_string(p) + "/lambda1limit.csv");
+  std::cout << "reading " << title << std::endl;
+  std::vector<double> limit = readLimit(title);
+
   gp.set_style("lines").plot_xy(s_list, limit, "limit");
   gp.unset_smooth();
   gp.showonscreen();
@@ -372,8 +340,8 @@ void lambdaNotOneConcurrence(const int& p)
 {
   // Calculates the rescaled concurrence for lambda!=1
   std::vector<double> s_list = linspace(0, 1, 501);
-  std::vector<double> l_list = linspace(0, 1, 6);
-  std::vector<int> N_list = {2, 4, 8, 16, 32, 62};
+  std::vector<double> l_list = linspace(0.2, 1., 5);
+    std::vector<int> N_list = {2, 4, 8, 16, 32, 62};
   for(double l : l_list)
   {
     std::ostringstream strs;
@@ -411,7 +379,7 @@ void lambdaNotOneConcurrence(const int& p)
     {
       std::ostringstream s2;
       s2 << N_list[i] << " Spins";
-      gp.set_style("lines").plot_xy(s_list, concurrences[i], s2.str());
+      gp.set_style("points").plot_xy(s_list, concurrences[i], s2.str());
     }
     title = ("../results/concurrence/p" + std::to_string(p) + "/lambda" + str + "limit.csv");
     std::cout << "reading " << title << std::endl;
