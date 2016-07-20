@@ -2,6 +2,8 @@
 //
 // C++ port of quantum annealing python script.
 
+#include "quantumAnnealing.hpp"
+
 #include <algorithm>
 #include <assert.h>
 #include <cmath>
@@ -15,8 +17,6 @@
 #include <vector>
 
 #include "/home/fredrik/repos/gnuplot-cpp/gnuplot_i.hpp"
-
-typedef unsigned int long long BigInteger;
 
 using namespace Eigen;
 
