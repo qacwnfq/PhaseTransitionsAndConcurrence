@@ -7,5 +7,9 @@
 .cache/
 *.out
 *.d
+*.png
+*.csv
+*.pdf
+*.ps
 .gitignore
 __pycache__/
