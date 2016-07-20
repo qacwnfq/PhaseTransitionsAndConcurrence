@@ -40,19 +40,6 @@ double sign_mx(const double& mx, const double& mz, const double& s, const double
 	    std::sqrt(std::pow((p*s*l*std::pow(mz, p-1)), 2) + std::pow((1-s-2*s*(1-l)*mx), 2)) - mx);
 }
 
-double m_z(const double& mx, const double& mz, const double& s, const double& l, const double& p)
-{
-  // if(s<1./(3-2*l))
-  // {
-  //   return ((p*s*l*std::pow(mz, p-1)) /
-  // 	    std::sqrt(std::pow((p*s*l*std::pow(mz, p-1)), 2) + std::pow((1-s-2*s*(1-l)*mx), 2)));
-  // }
-  // else
-  return ((p*s*l*std::pow(mz, p-1)) /
-	  std::sqrt(std::pow((p*s*l*std::pow(mz, p-1)), 2) + std::pow((1-s-2*s*(1-l)*mx), 2)));
-
-	  
-}
 
 template<typename T>
 std::vector<double> linspace(const T& s, const T& e, const int& n)
