@@ -9,9 +9,6 @@ import numpy as np
 import pandas as pd
 from scipy import optimize
 
-# defines
-P = 5
-
 
 def cardaniac(A, B, C, D):
     """returns solutions in list ordered of A*x**3+B*x**2+C*x+D.
@@ -41,10 +38,10 @@ def cardaniac(A, B, C, D):
     return solution
 
 
-def classicalEnergy(s, l=None, p=P):
+def classicalEnergy(s, l, p):
     """This function returns the results obtained by analytical calculation of
     the groundstate energy for the thermodynamic limit."""
-    if l is None:
+    if l == 1:
         x = optimize.minimize_scalar(
             lambda x: -s*(math.cos(x))**p - (1-s)*math.sin(x))
         if x.success is True:
@@ -66,19 +63,19 @@ def classicalEnergy(s, l=None, p=P):
         return min(qp, fm)
 
 
-def e(x, s, l, p=P):
+def e(x, s, l, p):
     """x is the minimum of the classical groundstate energy."""
     return (-s*l*math.sin(x)**p + s*(1-l)*math.cos(x)**2 -
             (1-s)*math.cos(x))
 
 
-def gamma(x, s, l, p=P):
+def gamma(x, s, l, p):
     """x is the minimum of the classical groundstate energy."""
     return (-0.5*(s*l*p*(p-1)*math.sin(x)**(p-2)*math.cos(x)**2 -
             2*s*(1-l)*math.sin(x)**2))
 
 
-def delta(x, s, l, p=P):
+def delta(x, s, l, p):
     """x is the minimum of the classical groundstate energy."""
     return (
         -s*l*(p*(p-1)*math.sin(x)**(p-2)*math.cos(x)**2-2*p*math.sin(x)**p) +
@@ -86,17 +83,17 @@ def delta(x, s, l, p=P):
         2*(1-s)*math.cos(x))
 
 
-def epsilon(x, s, l, p=P):
+def epsilon(x, s, l, p):
     """x is the minimum of the classical groundstate energy."""
     return (-2.*gamma(x, s, l, p) / delta(x, s, l, p))
 
 
-def Delta(x, s, l, p=P):
+def Delta(x, s, l, p):
     """x is the minimum of the classical groundstate energy."""
     return delta(x, s, l, p)*math.sqrt(1-epsilon(x, s, l, p)**2)
 
 
-def calculateGap(s, l, p=P):
+def calculateGap(s, l, p):
     """Uses analytical formula to calculate the Gap in the classical limit."""
     x = np.linspace(0, math.pi, 10001)
     f = [e(i, s, l, p) for i in x]
@@ -110,7 +107,7 @@ def calculateGap(s, l, p=P):
         return 0
 
 
-def calculateConcurrenceInLimit(s, l, p=P):
+def calculateConcurrenceInLimit(s, l, p):
     """Returns the concurrence in the classical limit."""
     x = np.linspace(0, math.pi, 10001)
     f = [e(i, s, l, p) for i in x]
@@ -118,18 +115,18 @@ def calculateConcurrenceInLimit(s, l, p=P):
     for i in x:
         f[i] = e(i, s, l, p)
     fm = min(f, key=f.get)
-    eps = epsilon(fm, s, l, p=p)
+    eps = epsilon(fm, s, l, p)
     alpha = math.sqrt((1-eps)/(1+eps))
     return (1-alpha)
 
 
-def getConcurrenceLimit(l):
+def getConcurrenceLimit(l, p):
     s_list = np.linspace(0, 1, 501)
     concurrenceLimit = []
     for s in s_list:
         concurrenceLimit.append(max(0, calculateConcurrenceInLimit(
-            s, l, p=P)))
-    title = ("../results/concurrence/p" + str(P) + "/lambda" + str(l) +
+            s, l, p)))
+    title = ("../results/concurrence/p" + str(p) + "/lambda" + str(l) +
              "limit.csv")
     resultdf = pd.DataFrame()
     try:
@@ -142,11 +139,10 @@ def getConcurrenceLimit(l):
 
 
 if __name__ == "__main__":
-    l_list = np.linspace(0., 1, 6)
+    p = 5
+    l_list = np.linspace(0.2, 1, 5)
     l_list = list(l_list) + [0.95, 0.9, 0.85, 0.8, 0.75, 0.7]
-    print(l_list)
     for l in l_list:
-        print(l)
         if l == 0:
             continue
-        getConcurrenceLimit(l)
+        getConcurrenceLimit(l, p)
