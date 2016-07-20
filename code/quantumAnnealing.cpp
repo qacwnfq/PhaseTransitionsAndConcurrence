@@ -16,8 +16,7 @@
 
 #include "/home/fredrik/repos/gnuplot-cpp/gnuplot_i.hpp"
 
-// TODO add typedef for bigint
-
+typedef unsigned int long long BigInteger;
 
 using namespace Eigen;
 
@@ -108,14 +107,14 @@ Matrix<double, Dynamic, Dynamic> Sz(const int& N)
 }
 
 
-Matrix<double, Dynamic, Dynamic> ptrace(const Matrix<double, Dynamic, Dynamic>& rho, std::vector<std::vector<unsigned long long int> > pascal, const int& N)
+Matrix<double, Dynamic, Dynamic> ptrace(const Matrix<double, Dynamic, Dynamic>& rho, std::vector<std::vector<BigInteger> > pascal, const int& N)
 {
   //N is equal to number of spins+1
   Matrix<double, Dynamic, Dynamic> res;
   res.resize(N-1, N-1);
   res.setZero();
-  std::vector<unsigned long long int> New = pascal[N-2];
-  std::vector<unsigned long long int> Old = pascal[N-1];
+  std::vector<BigInteger> New = pascal[N-2];
+  std::vector<BigInteger> Old = pascal[N-1];
   double temp = 0;
   // TODO use symmetry of density matrix to speed up calculations
   for(int i=0; i<N; ++i)
@@ -143,18 +142,18 @@ Matrix<double, Dynamic, Dynamic> ptrace(const Matrix<double, Dynamic, Dynamic>& 
   return res;
 }
 
-std::vector<std::vector<unsigned long long int> > pascalTriangle(const int& prev, const int& N)
+std::vector<std::vector<BigInteger> > pascalTriangle(const int& prev, const int& N)
 {
   // Calculates pascal triangle up to N spins starting from line prev which means N+1 lines
   // in O(N^2). Be careful of integerowerflow though
-  std::vector<std::vector<unsigned long long int> > triangle;
+  std::vector<std::vector<BigInteger> > triangle;
   // Starts at line 0 even if its not necessary because
   // this leads to the vector index being equal to the
   // number of spins.
   for(int line=prev; line<N+1; line++)
     {
-      unsigned long long int C = 1;
-      std::vector<unsigned long long int> lin;
+      BigInteger C = 1;
+      std::vector<BigInteger> lin;
       for(int i=1; i<line+2; i++)
     {
       lin.push_back(C);
@@ -257,7 +256,7 @@ Matrix<double, Dynamic, Dynamic> ket2dm(SelfAdjointEigenSolver<Matrix<double, Dy
 }
 
 Matrix<double, Dynamic, Dynamic> extract2particleDm(Matrix<double, Dynamic, Dynamic> rho,
-						 std::vector<std::vector<unsigned long long int> > pascal,
+						 std::vector<std::vector<BigInteger> > pascal,
 						 const int& N)
 {
   // Takes a density matrix in zee man basis and
@@ -314,7 +313,7 @@ double concurrence(Matrix<double, Dynamic, Dynamic> rho)
 }
 
 double calculateConcurrence(SelfAdjointEigenSolver<Matrix<double, Dynamic, Dynamic> > es,
-			    std::vector<std::vector<unsigned long long int> > pascal,
+			    std::vector<std::vector<BigInteger> > pascal,
 			    const int& N)
 {
   Matrix<double, Dynamic, Dynamic> rho = ket2dm(es, N);
@@ -372,7 +371,7 @@ void lambdaOneConcurrence(const int& p)
   std::vector<int> N_list = {2, 4, 8, 16, 32, 62};
 
   std::vector<std::vector<double> > concurrences;
-  std::vector<std::vector<unsigned long long int> > pascal, temp;
+  std::vector<std::vector<BigInteger> > pascal, temp;
   for(int N: N_list)
   {
     temp = pascalTriangle(pascal.size(), N);
@@ -475,7 +474,7 @@ void lambdaNotOneConcurrence(const int& p)
     std::string str = strs.str();
     if(l==0.)
       continue;
-    std::vector<std::vector<unsigned long long int> > pascal, temp;
+    std::vector<std::vector<BigInteger> > pascal, temp;
     std::vector<std::vector<double> > concurrences;
     for(int N : N_list)
     {
