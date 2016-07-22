@@ -12,7 +12,6 @@
 #include <unsupported/Eigen/MatrixFunctions>
 #include <fstream>
 #include <iostream>
-#include <quadmath.h>
 #include <sstream>
 #include <string>
 #include <vector>
@@ -152,7 +151,7 @@ std::vector<std::vector<BigDouble> > pascalTriangle(const int& prev, const int& 
   // number of spins.
   for(int line=prev; line<N+1; line++)
   {
-    BigDouble C = 1;
+    long double C = 1;
     std::vector<BigDouble> lin;
     for(int i=1; i<line+2; i++)
     {
@@ -367,7 +366,7 @@ void lambdaOneConcurrence(const int& p)
 {
   // Calculates the rescaled concurrence for lambda=1
   std::vector<double> s_list = linspace(0, 1, 501);
-  std::vector<int> N_list = {16, 32, 64, 128, 256};
+  std::vector<int> N_list = {20, 40, 60, 100, 200};
 
   std::vector<std::vector<double> > concurrences;
   std::vector<std::vector<BigDouble> > pascal, temp;
@@ -464,11 +463,7 @@ void lambdaNotOne(const int& p)
 void lambdaNotOneConcurrence(const int& p)
 {
   // Calculates the rescaled concurrence for lambda!=1
-  std::vector<double> s_list = linspace(0, 1, 1001);
-  // The limit calculation is saved to csv and has less
-  // data points right now, so s_list2 has to be used
-  // to plot it.
-  std::vector<double> s_list2 = linspace(0, 1, 501);
+  std::vector<double> s_list = linspace(0, 1, 501);
   std::vector<double> l_list = linspace(0.2, 1., 5);
   std::vector<int> N_list = {20, 40, 60, 80, 100};
   for(double l : l_list)
@@ -513,10 +508,11 @@ void lambdaNotOneConcurrence(const int& p)
     title = ("../results/concurrence/p" + std::to_string(p) + "/lambda" + str + "limit.csv");
     std::cout << "reading " << title << std::endl;
     std::vector<double> limit = readLimit(title);
-    gp.savetops(title2);	  
-    gp.set_style("lines").plot_xy(s_list2, limit, "limit");
+    gp.savetops(title2);
+    std::cout << limit.size() << std::endl;
+    gp.set_style("lines").plot_xy(s_list, limit, "limit");
     gp.unset_smooth();
     gp.showonscreen();
-    std::system("read");
+    // std::system("read");
   }
 }

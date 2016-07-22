@@ -13,6 +13,6 @@ int main(int argc, char* argv[])
     p = std::atoi(argv[1]);
   }
   std::cout << "Running for p=" << std::to_string(p) << std::endl;
-  // lambdaOneConcurrence(p);
-  lambdaNotOneConcurrence(p);
+  lambdaOneConcurrence(p);
+  //lambdaNotOneConcurrence(p);
 }
