@@ -107,14 +107,14 @@ Matrix<double, Dynamic, Dynamic> Sz(const int& N)
 }
 
 
-Matrix<double, Dynamic, Dynamic> ptrace(const Matrix<double, Dynamic, Dynamic>& rho, std::vector<std::vector<BigInteger> > pascal, const int& N)
+Matrix<double, Dynamic, Dynamic> ptrace(const Matrix<double, Dynamic, Dynamic>& rho, std::vector<std::vector<BigDouble> > pascal, const int& N)
 {
   //N is equal to number of spins+1
   Matrix<double, Dynamic, Dynamic> res;
   res.resize(N-1, N-1);
   res.setZero();
-  std::vector<BigInteger> New = pascal[N-2];
-  std::vector<BigInteger> Old = pascal[N-1];
+  std::vector<BigDouble> New = pascal[N-2];
+  std::vector<BigDouble> Old = pascal[N-1];
   double temp = 0;
   // TODO use symmetry of density matrix to speed up calculations
   for(int i=0; i<N; ++i)
@@ -142,18 +142,18 @@ Matrix<double, Dynamic, Dynamic> ptrace(const Matrix<double, Dynamic, Dynamic>& 
   return res;
 }
 
-std::vector<std::vector<BigInteger> > pascalTriangle(const int& prev, const int& N)
+std::vector<std::vector<BigDouble> > pascalTriangle(const int& prev, const int& N)
 {
     // Calculates pascal triangle up to N spins starting from line prev which means N+1 lines
   // in O(N^2). Be careful of integerowerflow though
-  std::vector<std::vector<BigInteger> > triangle;
+  std::vector<std::vector<BigDouble> > triangle;
   // Starts at line 0 even if its not necessary because
   // this leads to the vector index being equal to the
   // number of spins.
   for(int line=prev; line<N+1; line++)
   {
-    BigInteger C = 1;
-    std::vector<BigInteger> lin;
+    BigDouble C = 1;
+    std::vector<BigDouble> lin;
     for(int i=1; i<line+2; i++)
     {
       lin.push_back(C);
@@ -231,8 +231,9 @@ Matrix<double, Dynamic, Dynamic> Vaff(const int& N)
   double S = double(N)/2;
   Matrix<double, Dynamic, Dynamic> Vaff = Sx(N);
   Vaff /= S;
-  MatrixPower<Matrix<double, Dynamic, Dynamic> > Apow(Vaff);
-  Vaff = Apow(2);
+  //MatrixPower<Matrix<double, Dynamic, Dynamic> > Apow(Vaff);
+  // Vaff = Apow(2);
+  Vaff *= Vaff; 
   Vaff *= N;
   return Vaff;
 }
@@ -254,7 +255,7 @@ Matrix<double, Dynamic, Dynamic> ket2dm(SelfAdjointEigenSolver<Matrix<double, Dy
 }
 
 Matrix<double, Dynamic, Dynamic> extract2particleDm(Matrix<double, Dynamic, Dynamic> rho,
-						 std::vector<std::vector<BigInteger> > pascal,
+						 std::vector<std::vector<BigDouble> > pascal,
 						 const int& N)
 {
   // Takes a density matrix in zee man basis and
@@ -311,7 +312,7 @@ double concurrence(Matrix<double, Dynamic, Dynamic> rho)
 }
 
 double calculateConcurrence(SelfAdjointEigenSolver<Matrix<double, Dynamic, Dynamic> > es,
-			    std::vector<std::vector<BigInteger> > pascal,
+			    std::vector<std::vector<BigDouble> > pascal,
 			    const int& N)
 {
   Matrix<double, Dynamic, Dynamic> rho = ket2dm(es, N);
@@ -366,10 +367,10 @@ void lambdaOneConcurrence(const int& p)
 {
   // Calculates the rescaled concurrence for lambda=1
   std::vector<double> s_list = linspace(0, 1, 501);
-  std::vector<int> N_list = {50, 100, 150, 200, 250};
+  std::vector<int> N_list = {16, 32, 64, 128, 256};
 
   std::vector<std::vector<double> > concurrences;
-  std::vector<std::vector<BigInteger> > pascal, temp;
+  std::vector<std::vector<BigDouble> > pascal, temp;
   for(int N: N_list)
   {
     temp = pascalTriangle(pascal.size(), N);
@@ -378,6 +379,7 @@ void lambdaOneConcurrence(const int& p)
     std::vector<double> concurrence;
     for(double s: s_list)
     {
+      std::cout << s << std::endl;
       SelfAdjointEigenSolver<Matrix<double, Dynamic, Dynamic> > es;
       es.compute(H0plusVtf(N, s, p));
       concurrence.push_back(calculateConcurrence(es, pascal, N)*(N-1));
@@ -462,9 +464,13 @@ void lambdaNotOne(const int& p)
 void lambdaNotOneConcurrence(const int& p)
 {
   // Calculates the rescaled concurrence for lambda!=1
-  std::vector<double> s_list = linspace(0, 1, 501);
+  std::vector<double> s_list = linspace(0, 1, 1001);
+  // The limit calculation is saved to csv and has less
+  // data points right now, so s_list2 has to be used
+  // to plot it.
+  std::vector<double> s_list2 = linspace(0, 1, 501);
   std::vector<double> l_list = linspace(0.2, 1., 5);
-  std::vector<int> N_list = {100, 120, 140, 160, 180};
+  std::vector<int> N_list = {20, 40, 60, 80, 100};
   for(double l : l_list)
   {
     std::ostringstream strs;
@@ -472,7 +478,7 @@ void lambdaNotOneConcurrence(const int& p)
     std::string str = strs.str();
     if(l==0.)
       continue;
-    std::vector<std::vector<BigInteger> > pascal, temp;
+    std::vector<std::vector<BigDouble> > pascal, temp;
     std::vector<std::vector<double> > concurrences;
     for(int N : N_list)
     {
@@ -508,7 +514,7 @@ void lambdaNotOneConcurrence(const int& p)
     std::cout << "reading " << title << std::endl;
     std::vector<double> limit = readLimit(title);
     gp.savetops(title2);	  
-    gp.set_style("lines").plot_xy(s_list, limit, "limit");
+    gp.set_style("lines").plot_xy(s_list2, limit, "limit");
     gp.unset_smooth();
     gp.showonscreen();
     std::system("read");

@@ -3,4 +3,4 @@
 # Simple Makefile for quantumAnnealing.cpp
 
 runQuantumAnnealing: quantumAnnealing.cpp runQuantumAnnealing.cpp
-	g++ -o runQuantumAnnealing.out runQuantumAnnealing.cpp quantumAnnealing.cpp -I /usr/include/eigen3/ -lgmpxx -lgmp -std=c++11 -O3 -w
+	g++ -o runQuantumAnnealing.out runQuantumAnnealing.cpp quantumAnnealing.cpp -I /usr/include/eigen3/ -std=gnu++11 -O3 -w
