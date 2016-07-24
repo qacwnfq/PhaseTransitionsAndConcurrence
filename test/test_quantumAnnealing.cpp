@@ -126,6 +126,33 @@ BOOST_AUTO_TEST_CASE(test_Sz)
   BOOST_CHECK(expected2 == actual);
 }
 
+BOOST_AUTO_TEST_CASE(test_expectationValue)
+{
+  Matrix<double, Dynamic, Dynamic> state;
+  Matrix<double, Dynamic, Dynamic> op;
+  state.resize(3, 1);
+  op.resize(3, 3);
+  double expected;
+  double actual;
+
+  state.setZero();
+  op.setZero();
+  state(0, 0) = 1;
+  op(0, 1) = 1/std::sqrt(2);
+  op(1, 0) = 1/std::sqrt(2);
+  op(1, 2) = 1/std::sqrt(2);
+  op(2, 1) = 1/std::sqrt(2);
+  expected = 0;
+  actual = expectationValue(state, op);
+  BOOST_CHECK(expected == actual);
+
+  state(0, 0) = 1;
+  state(1, 0) = 1;
+  state(2, 0) = 1;
+  expected = 4/std::sqrt(2);
+  actual = expectationValue(state, op);
+  BOOST_CHECK(actual == expected);
+}
 
 BOOST_AUTO_TEST_CASE(test_ptrace)
 {
@@ -137,7 +164,7 @@ BOOST_AUTO_TEST_CASE(test_ptrace)
   expected(0, 1) = 1/std::sqrt(2)*(rho(0, 1)+rho(1, 2));
   expected(1, 0) = 1/std::sqrt(2)*(rho(1, 0)+rho(2, 1));
   expected(1, 1) = rho(2, 2) + rho(1, 1)/2;
-  std::vector<std::vector<unsigned long long int> > pascal = pascalTriangle(0, N);
+  std::vector<std::vector<long double> > pascal = pascalTriangle(0, N);
   Matrix<double, Dynamic, Dynamic> actual;
   actual = ptrace(rho, pascal, N+1);
   BOOST_CHECK(expected.isApprox(actual, 0.0001));

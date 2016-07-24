@@ -17,6 +17,7 @@ double mSxn(const double& m, const double& n, const double& S);
 double mSzn(const double& m, const double& n, const double& S);
 Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic> Sx(const int& N);
 Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic> Sz(const int& N);
+double expectationValue(Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic> state, Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic> op);
 Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic> ptrace(const Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic>& rho, std::vector<std::vector<BigDouble> > pascal, const int& N);
 std::vector<std::vector<BigDouble> > pascalTriangle(const int& prev, const int& N);
 Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic> H0(const int& N, const int& p);

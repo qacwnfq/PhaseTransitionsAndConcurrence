@@ -105,6 +105,18 @@ Matrix<double, Dynamic, Dynamic> Sz(const int& N)
   return Sz;
 }
 
+double expectationValue(Matrix<double, Dynamic, Dynamic> state, Matrix<double, Dynamic, Dynamic> op)
+{
+  double exp = 0;
+  for(int i=0; i<op.rows(); ++i)
+  {
+    for(int j=0; j<op.rows(); ++j)
+    {
+      exp += state(i, 0)*op(i, j)*state(j, 0);
+    }
+  }
+  return exp;
+}
 
 Matrix<double, Dynamic, Dynamic> ptrace(const Matrix<double, Dynamic, Dynamic>& rho, std::vector<std::vector<BigDouble> > pascal, const int& N)
 {
