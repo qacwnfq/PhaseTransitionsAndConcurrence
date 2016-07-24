@@ -10,6 +10,7 @@
 
 #include <boost/test/unit_test.hpp>
 #include <cmath>
+#include <complex>
 #include <Eigen/Core>
 #include <vector>
 
@@ -103,6 +104,33 @@ BOOST_AUTO_TEST_CASE(test_Sx)
   actual = Sx(N);
   BOOST_CHECK(expected2 == actual);
 }
+
+BOOST_AUTO_TEST_CASE(test_Sy)
+{
+  const std::complex<double> I = {0.0, 1.0};
+  int N = 2;
+  Matrix<std::complex<double>, 3, 3> expected;
+  expected.setZero();
+  expected(0, 1) = 0.5*std::sqrt(2)/I;
+  expected(1, 0) = -0.5*std::sqrt(2)/I;
+  expected(1, 2) = 0.5*std::sqrt(2)/I;
+  expected(2, 1) = -0.5*std::sqrt(2)/I;
+  Matrix<std::complex<double>, Dynamic, Dynamic> actual = Sy(N);
+  BOOST_CHECK(expected == actual);
+
+  N = 3;
+  Matrix<std::complex<double>, 4, 4> expected2;
+  expected2.setZero();
+  expected2(0, 1) = std::sqrt(3)/(2.*I);
+  expected2(1, 0) = -std::sqrt(3)/(2.*I);
+  expected2(1, 2) = 1./I;
+  expected2(2, 1) = -1./I;
+  expected2(2, 3) = std::sqrt(3)/(2.*I);
+  expected2(3, 2) = -std::sqrt(3)/(2.*I);
+  actual = Sy(N);
+  BOOST_CHECK(expected2 == actual);
+}
+
 
 BOOST_AUTO_TEST_CASE(test_Sz)
 {

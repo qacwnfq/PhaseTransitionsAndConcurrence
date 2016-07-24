@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <assert.h>
 #include <cmath>
+#include <complex>
 #include <Eigen/Core>
 #include <Eigen/Eigenvalues>
 #include <unsupported/Eigen/MatrixFunctions>
@@ -68,6 +69,12 @@ double mSxn(const double& m, const double& n, const double& S)
   return (kronecker(m, n+1) + kronecker(m+1, n))*0.5*std::sqrt(S*(S+1) -m*n);
 }
 
+complex mSyn(const double& m, const double& n, const double& S)
+{
+  assert(S > 0);
+  return (kronecker(m, n+1) - kronecker(m+1, n))*0.5/I*std::sqrt(S*(S+1) -m*n);
+}
+
 double mSzn(const double& m, const double& n, const double& S)
 {
   assert(S > 0);
@@ -84,10 +91,26 @@ Matrix<double, Dynamic, Dynamic> Sx(const int& N)
   Sx.setZero();
   for(int i=0; i<N; ++i)
   {
-    Sx(i, i+1) = mSxn(m[i], m[i+1], S);
-    Sx(i+1, i) = mSxn(m[i+1], m[i], S);
+    Sx(i, i+1) = mSxn(m[i+1], m[i], S);
+    Sx(i+1, i) = mSxn(m[i], m[i+1], S);
   }
   return Sx;
+}
+
+Matrix<complex, Dynamic, Dynamic> Sy(const int& N)
+{
+  assert(N > 0);
+  double S = (double)N/2;
+  std::vector<double> m = gen_m(N);
+  Matrix<complex, Dynamic, Dynamic> Sy;
+  Sy.resize(N+1, N+1);
+  Sy.setZero();
+  for(int i=0; i<N; ++i)
+  {
+    Sy(i, i+1) = mSyn(m[i+1], m[i], S);
+    Sy(i+1, i) = mSyn(m[i], m[i+1], S);
+  }
+  return Sy;
 }
 
 Matrix<double, Dynamic, Dynamic> Sz(const int& N)
@@ -117,6 +140,31 @@ double expectationValue(Matrix<double, Dynamic, Dynamic> state, Matrix<double, D
   }
   return exp;
 }
+
+double vplus(const int& N, Matrix<double, Dynamic, Dynamic> state)
+{
+  double v = (N*N-2*N+4*expectationValue(state, Sz(N)*Sz(N)) +
+	      4*expectationValue(state, Sz(N))*(N-1));
+  v /= 4*N*(N-1);
+  return v;
+}
+
+double vminus(const int& N, Matrix<double, Dynamic, Dynamic> state)
+{
+  double v = (N*N-2*N+4*expectationValue(state, Sz(N)*Sz(N)) -
+	      4*expectationValue(state, Sz(N))*(N-1));
+  v /= 4*N*(N-1);
+  return v;
+}
+
+double xplus(const int& N, Matrix<double, Dynamic, Dynamic> state){}
+double xminus(const int& N, Matrix<double, Dynamic, Dynamic> state){}
+double w(const int& N, Matrix<double, Dynamic, Dynamic> state)
+{
+  double w = (N*N-4*expectationValue(state, Sz(N)*Sz(N)))/(4*N*(N-1));
+}
+double y(const int& N, Matrix<double, Dynamic, Dynamic> state){}
+double u(const int& N, Matrix<double, Dynamic, Dynamic> state){}
 
 Matrix<double, Dynamic, Dynamic> ptrace(const Matrix<double, Dynamic, Dynamic>& rho, std::vector<std::vector<BigDouble> > pascal, const int& N)
 {
