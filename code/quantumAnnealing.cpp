@@ -128,9 +128,22 @@ Matrix<double, Dynamic, Dynamic> Sz(const int& N)
   return Sz;
 }
 
-double expectationValue(Matrix<double, Dynamic, Dynamic> state, Matrix<double, Dynamic, Dynamic> op)
+Matrix<complex, Dynamic, Dynamic> dM2c(Matrix<double, Dynamic, Dynamic> m)
 {
-  double exp = 0;
+  Matrix<complex, Dynamic, Dynamic> ret;
+  ret.resize(m.rows(), m.cols());
+  for(int i=0; i<m.rows(); ++i)
+    for(int j=0; j<m.cols(); ++j)
+    {
+      std::complex<double> c = m(i, j);
+      ret(i, j) = c;
+    }
+  return ret;
+}
+
+complex expectationValue(Matrix<double, Dynamic, Dynamic> state, Matrix<complex, Dynamic, Dynamic> op)
+{
+  complex exp = 0;
   for(int i=0; i<op.rows(); ++i)
   {
     for(int j=0; j<op.rows(); ++j)
@@ -141,30 +154,85 @@ double expectationValue(Matrix<double, Dynamic, Dynamic> state, Matrix<double, D
   return exp;
 }
 
-double vplus(const int& N, Matrix<double, Dynamic, Dynamic> state)
+complex vplus(const int& N, Matrix<double, Dynamic, Dynamic> state)
 {
-  double v = (N*N-2*N+4*expectationValue(state, Sz(N)*Sz(N)) +
-	      4*expectationValue(state, Sz(N))*(N-1));
+  complex v = 0;
+  v = ((double)N*N);
+  v -= (double)2*N;
+  v += 4.*expectationValue(state, dM2c(Sz(N)*Sz(N)));
+  v += 4.*expectationValue(state, dM2c(Sz(N)))*(double)(N-1);
   v /= 4*N*(N-1);
   return v;
 }
 
-double vminus(const int& N, Matrix<double, Dynamic, Dynamic> state)
+complex vminus(const int& N, Matrix<double, Dynamic, Dynamic> state)
 {
-  double v = (N*N-2*N+4*expectationValue(state, Sz(N)*Sz(N)) -
-	      4*expectationValue(state, Sz(N))*(N-1));
+  complex v = ((double)N*N-2.*N+4.*expectationValue(state, dM2c(Sz(N)*Sz(N))) -
+	       4.*expectationValue(state, dM2c(Sz(N)))*(double)(N-1));
   v /= 4*N*(N-1);
   return v;
 }
 
-double xplus(const int& N, Matrix<double, Dynamic, Dynamic> state){}
-double xminus(const int& N, Matrix<double, Dynamic, Dynamic> state){}
-double w(const int& N, Matrix<double, Dynamic, Dynamic> state)
-{
-  double w = (N*N-4*expectationValue(state, Sz(N)*Sz(N)))/(4*N*(N-1));
-}
-double y(const int& N, Matrix<double, Dynamic, Dynamic> state){}
-double u(const int& N, Matrix<double, Dynamic, Dynamic> state){}
+// complex xplus(const int& N, Matrix<double, Dynamic, Dynamic> state)
+// {
+//   Matrix<double, Dynamic, Dynamic> Splus = Sx(N) + I*Sy(N);
+//   complex x = (double)(N-1)*expectationValue(state, Splus) + expectationValue(state, Splus*Sz(N) + Sz(N)*Splus);
+//   x /= (2*N*(N-1));
+//   return x;
+// }
+
+// complex xminus(const int& N, Matrix<double, Dynamic, Dynamic> state)
+// {
+//     Matrix<double, Dynamic, Dynamic> Splus = Sx(N) + I*Sy(N);
+//     complex x = (double)(N-1)*expectationValue(state, Splus) - expectationValue(state, Splus*Sz(N) + Sz(N)*Splus);
+//   x /= (2*N*(N-1));
+//   return x;
+// }
+
+// complex w(const int& N, Matrix<double, Dynamic, Dynamic> state)
+// {
+//   complex w = ((double)N*N-4.*expectationValue(state, Sz(N)*Sz(N)));
+//   w /= (double)(4*N*(N-1));
+//   return w;
+// }
+
+// complex y(const int& N, Matrix<double, Dynamic, Dynamic> state)
+// {
+//   complex y = 2.*expectationValue(state, Sx(N)*Sx(N) + Sy(N)+Sy(N)) - (double)N;
+//   y /= 2*N*(N-1);
+//   return y;
+// }
+
+// complex u(const int& N, Matrix<double, Dynamic, Dynamic> state)
+// {
+//   Matrix<double, Dynamic, Dynamic> Splus = Sx(N) + I*Sy(N);
+//   complex u = expectationValue(state, Splus*Splus);
+//   u /= N*(N-1);
+//   return u;
+// }
+
+// Matrix<complex, 4, 4> twoSystemRho(Matrix<double, Dynamic, Dynamic> state)
+// {
+//   Matrix<complex, 4, 4> rho;
+//   rho.setZero();
+//   rho(0, 0) = vplus(state.cols()-1, state);
+//   rho(0, 1) = std::conj(xplus(state.cols()-1, state));
+//   rho(0, 2) = std::conj(xplus(state.cols()-1, state));
+//   rho(0, 3) = std::conj(u(state.cols()-1, state));
+//   rho(1, 0) = xplus(state.cols()-1, state);
+//   rho(1, 1) = w(state.cols()-1, state);
+//   rho(1, 2) = std::conj(y(state.cols()-1, state));
+//   rho(1, 3) = std::conj(xminus(state.cols()-1, state));
+//   rho(2, 0) = xplus(state.cols()-1, state);
+//   rho(2, 1) = y(state.cols()-1, state);
+//   rho(2, 2) = w(state.cols()-1, state);
+//   rho(2, 3) = std::conj(xminus(state.cols()-1, state));
+//   rho(3, 0) = u(state.cols()-1, state);
+//   rho(3, 1) = xminus(state.cols()-1, state);
+//   rho(3, 2) = xminus(state.cols()-1, state);
+//   rho(3, 3) = vminus(state.cols()-1, state);
+//   return rho;
+// }
 
 Matrix<double, Dynamic, Dynamic> ptrace(const Matrix<double, Dynamic, Dynamic>& rho, std::vector<std::vector<BigDouble> > pascal, const int& N)
 {
@@ -183,7 +251,7 @@ Matrix<double, Dynamic, Dynamic> ptrace(const Matrix<double, Dynamic, Dynamic>& 
       double factor = (Old[i]);
       factor*= (Old[j]);
       if((i < N-1) and (j < N-1))
-      {	
+      {
       	temp = rho(i, j) / factor;
       	temp *= (New[i]);
       	temp *= (New[j]);
@@ -292,7 +360,7 @@ Matrix<double, Dynamic, Dynamic> Vaff(const int& N)
   Vaff /= S;
   //MatrixPower<Matrix<double, Dynamic, Dynamic> > Apow(Vaff);
   // Vaff = Apow(2);
-  Vaff *= Vaff; 
+  Vaff *= Vaff;
   Vaff *= N;
   return Vaff;
 }
@@ -338,7 +406,7 @@ double concurrence(Matrix<double, Dynamic, Dynamic> rho)
   Matrix<double, Dynamic, Dynamic> copy = rho;
   rho.resize(4, 4);
   rho.setZero();
-  // Applies the sigmay_i tensor sigmay_j to rho 
+  // Applies the sigmay_i tensor sigmay_j to rho
   rho(0, 0) = -copy(0, 2);
   rho(1, 0) = -copy(1, 2);
   rho(2, 0) = -copy(2, 2);
@@ -511,7 +579,7 @@ void lambdaNotOne(const int& p)
       std::ostringstream s2;
       s2 << N_list[i] << " Spins";
       gp.set_style("lines").plot_xy(s_list, energies[i], s2.str());
-    }  
+    }
     gp.unset_smooth();
     gp.showonscreen();
     std::cout << "Press Enter to exit." << std::endl;
