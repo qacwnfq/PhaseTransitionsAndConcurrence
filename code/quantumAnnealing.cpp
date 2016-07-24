@@ -10,11 +10,11 @@
 #include <complex>
 #include <Eigen/Core>
 #include <Eigen/Eigenvalues>
-#include <unsupported/Eigen/MatrixFunctions>
 #include <fstream>
 #include <iostream>
 #include <sstream>
 #include <string>
+#include <unsupported/Eigen/MatrixFunctions>
 #include <vector>
 
 #include "/home/fredrik/repos/gnuplot-cpp/gnuplot_i.hpp"
@@ -132,6 +132,7 @@ Matrix<complex, Dynamic, Dynamic> dM2c(Matrix<double, Dynamic, Dynamic> m)
 {
   Matrix<complex, Dynamic, Dynamic> ret;
   ret.resize(m.rows(), m.cols());
+  ret.setZero();
   for(int i=0; i<m.rows(); ++i)
     for(int j=0; j<m.cols(); ++j)
     {
@@ -159,7 +160,8 @@ complex vplus(const int& N, Matrix<double, Dynamic, Dynamic> state)
   complex v = 0;
   v = ((double)N*N);
   v -= (double)2*N;
-  v += 4.*expectationValue(state, dM2c(Sz(N)*Sz(N)));
+  auto a = dM2c(Sz(N)*Sz(N));
+  v += 4.*expectationValue(state, a);
   v += 4.*expectationValue(state, dM2c(Sz(N)))*(double)(N-1);
   v /= 4*N*(N-1);
   return v;
@@ -173,66 +175,68 @@ complex vminus(const int& N, Matrix<double, Dynamic, Dynamic> state)
   return v;
 }
 
-// complex xplus(const int& N, Matrix<double, Dynamic, Dynamic> state)
-// {
-//   Matrix<double, Dynamic, Dynamic> Splus = Sx(N) + I*Sy(N);
-//   complex x = (double)(N-1)*expectationValue(state, Splus) + expectationValue(state, Splus*Sz(N) + Sz(N)*Splus);
-//   x /= (2*N*(N-1));
-//   return x;
-// }
+complex xplus(const int& N, Matrix<double, Dynamic, Dynamic> state)
+{
+  Matrix<complex, Dynamic, Dynamic> Splus = dM2c(Sx(N)) + I*Sy(N);
+  complex x = (double)(N-1)*expectationValue(state, Splus) + expectationValue(state, Splus*Sz(N) + Sz(N)*Splus);
+  x /= (double)(2.*N*(N-1));
+  return x;
+}
 
-// complex xminus(const int& N, Matrix<double, Dynamic, Dynamic> state)
-// {
-//     Matrix<double, Dynamic, Dynamic> Splus = Sx(N) + I*Sy(N);
-//     complex x = (double)(N-1)*expectationValue(state, Splus) - expectationValue(state, Splus*Sz(N) + Sz(N)*Splus);
-//   x /= (2*N*(N-1));
-//   return x;
-// }
+complex xminus(const int& N, Matrix<double, Dynamic, Dynamic> state)
+{
+  Matrix<complex, Dynamic, Dynamic> Splus = dM2c(Sx(N)) + I*Sy(N);
+  complex x = (double)(N-1)*expectationValue(state, Splus) - expectationValue(state, Splus*Sz(N) + Sz(N)*Splus);
+  x /= (double)(2*N*(N-1));
+  return x;
+}
 
-// complex w(const int& N, Matrix<double, Dynamic, Dynamic> state)
-// {
-//   complex w = ((double)N*N-4.*expectationValue(state, Sz(N)*Sz(N)));
-//   w /= (double)(4*N*(N-1));
-//   return w;
-// }
+complex w(const int& N, Matrix<double, Dynamic, Dynamic> state)
+{
+  complex w = ((double)N*N-4.*expectationValue(state, dM2c(Sz(N)*Sz(N))));
+  w /= (double)(4*N*(N-1));
+  return w;
+}
 
-// complex y(const int& N, Matrix<double, Dynamic, Dynamic> state)
-// {
-//   complex y = 2.*expectationValue(state, Sx(N)*Sx(N) + Sy(N)+Sy(N)) - (double)N;
-//   y /= 2*N*(N-1);
-//   return y;
-// }
+complex y(const int& N, Matrix<double, Dynamic, Dynamic> state)
+{
+  complex y = 2.*expectationValue(state, dM2c(Sx(N)*Sx(N)) + Sy(N)+Sy(N)) - (double)N;
+  y /= (double)2*N*(N-1);
+  return y;
+}
 
-// complex u(const int& N, Matrix<double, Dynamic, Dynamic> state)
-// {
-//   Matrix<double, Dynamic, Dynamic> Splus = Sx(N) + I*Sy(N);
-//   complex u = expectationValue(state, Splus*Splus);
-//   u /= N*(N-1);
-//   return u;
-// }
+complex u(const int& N, Matrix<double, Dynamic, Dynamic> state)
+{
+  Matrix<complex, Dynamic, Dynamic> Splus = dM2c(Sx(N)) + I*Sy(N);
+  complex u = expectationValue(state, Splus*Splus);
+  u /= (double)N*(N-1);
+  return u;
+}
 
-// Matrix<complex, 4, 4> twoSystemRho(Matrix<double, Dynamic, Dynamic> state)
-// {
-//   Matrix<complex, 4, 4> rho;
-//   rho.setZero();
-//   rho(0, 0) = vplus(state.cols()-1, state);
-//   rho(0, 1) = std::conj(xplus(state.cols()-1, state));
-//   rho(0, 2) = std::conj(xplus(state.cols()-1, state));
-//   rho(0, 3) = std::conj(u(state.cols()-1, state));
-//   rho(1, 0) = xplus(state.cols()-1, state);
-//   rho(1, 1) = w(state.cols()-1, state);
-//   rho(1, 2) = std::conj(y(state.cols()-1, state));
-//   rho(1, 3) = std::conj(xminus(state.cols()-1, state));
-//   rho(2, 0) = xplus(state.cols()-1, state);
-//   rho(2, 1) = y(state.cols()-1, state);
-//   rho(2, 2) = w(state.cols()-1, state);
-//   rho(2, 3) = std::conj(xminus(state.cols()-1, state));
-//   rho(3, 0) = u(state.cols()-1, state);
-//   rho(3, 1) = xminus(state.cols()-1, state);
-//   rho(3, 2) = xminus(state.cols()-1, state);
-//   rho(3, 3) = vminus(state.cols()-1, state);
-//   return rho;
-// }
+Matrix<complex, Dynamic, Dynamic> twoSystemRho(Matrix<double, Dynamic, Dynamic> state)
+{
+  Matrix<complex, Dynamic, Dynamic> rho;
+  rho.resize(4, 4);
+  rho.setZero();
+  const int N = state.rows() - 1;
+  rho(0, 0) = vplus(N, state);
+  rho(0, 1) = std::conj(xplus(N, state));
+  rho(0, 2) = std::conj(xplus(N, state));
+  rho(0, 3) = std::conj(u(N, state));
+  rho(1, 0) = xplus(N, state);
+  rho(1, 1) = w(N, state);
+  rho(1, 2) = std::conj(y(N, state));
+  rho(1, 3) = std::conj(xminus(N, state));
+  rho(2, 0) = xplus(N, state);
+  rho(2, 1) = y(N, state);
+  rho(2, 2) = w(N, state);
+  rho(2, 3) = std::conj(xminus(N, state));
+  rho(3, 0) = u(N, state);
+  rho(3, 1) = xminus(N, state);
+  rho(3, 2) = xminus(N, state);
+  rho(3, 3) = vminus(N, state);
+  return rho;
+}
 
 Matrix<double, Dynamic, Dynamic> ptrace(const Matrix<double, Dynamic, Dynamic>& rho, std::vector<std::vector<BigDouble> > pascal, const int& N)
 {
@@ -378,6 +382,7 @@ Matrix<double, Dynamic, Dynamic> H0plusVaffplusVtf(const int& N, const double& s
 Matrix<double, Dynamic, Dynamic> ket2dm(SelfAdjointEigenSolver<Matrix<double, Dynamic, Dynamic> > es, const int& N)
 {
   // Takes a ket and creates a density matrix from it.
+  // TODO makesure we get the eigenvector to the smalles value!
   return es.eigenvectors().col(0)*es.eigenvectors().col(0).transpose();
 }
 

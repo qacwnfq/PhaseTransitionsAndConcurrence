@@ -12,7 +12,11 @@
 #include <cmath>
 #include <complex>
 #include <Eigen/Core>
+#include <Eigen/Eigenvalues>
 #include <vector>
+
+// remove later
+#include <iostream>
 
 using namespace Eigen;
 
@@ -157,11 +161,11 @@ BOOST_AUTO_TEST_CASE(test_Sz)
 BOOST_AUTO_TEST_CASE(test_expectationValue)
 {
   Matrix<double, Dynamic, Dynamic> state;
-  Matrix<double, Dynamic, Dynamic> op;
+  Matrix<complex, Dynamic, Dynamic> op;
   state.resize(3, 1);
   op.resize(3, 3);
-  double expected;
-  double actual;
+  complex expected;
+  complex actual;
 
   state.setZero();
   op.setZero();
@@ -170,16 +174,27 @@ BOOST_AUTO_TEST_CASE(test_expectationValue)
   op(1, 0) = 1/std::sqrt(2);
   op(1, 2) = 1/std::sqrt(2);
   op(2, 1) = 1/std::sqrt(2);
-  expected = 0;
+  expected = 0.;
   actual = expectationValue(state, op);
   BOOST_CHECK(expected == actual);
 
   state(0, 0) = 1;
   state(1, 0) = 1;
   state(2, 0) = 1;
-  expected = 4/std::sqrt(2);
+  expected = 4./std::sqrt(2);
   actual = expectationValue(state, op);
   BOOST_CHECK(actual == expected);
+}
+
+BOOST_AUTO_TEST_CASE(test_twoSystemRho)
+{
+  Matrix<double, Dynamic, Dynamic> H = H0(2, 5);
+  SelfAdjointEigenSolver<Matrix<double, Dynamic, Dynamic> > es;
+  es.compute(H);
+  // TODO find out which vector belongs to which eigenstate
+  auto vector = es.eigenvectors().col(1);
+  auto actual = twoSystemRho(vector);
+  std::cout << actual << std::endl;
 }
 
 BOOST_AUTO_TEST_CASE(test_ptrace)

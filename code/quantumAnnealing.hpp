@@ -31,12 +31,15 @@ complex xminus(const int& N, Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynami
 complex w(const int& N, Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic> state);
 complex y(const int& N, Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic> state);
 complex u(const int& N, Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic> state);
-Eigen::Matrix<complex, 4, 4> twoSystemRho(Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic> state);
+Eigen::Matrix<complex, Eigen::Dynamic, Eigen::Dynamic> twoSystemRho(Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic> state);
 Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic> ptrace(const Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic>& rho, std::vector<std::vector<BigDouble> > pascal, const int& N);
 std::vector<std::vector<BigDouble> > pascalTriangle(const int& prev, const int& N);
 Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic> H0(const int& N, const int& p);
 Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic> Vtf(const int& N);
 Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic> Vaff(const int& N);
+
+//Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic> ket2dm(Eigen::SelfAdjointEigenSolver<Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic>> es, const int& N);
+
 double concurrence(Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic> rho);
 
 
