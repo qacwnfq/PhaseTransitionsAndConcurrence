@@ -142,6 +142,21 @@ Matrix<complex, Dynamic, Dynamic> dM2c(Matrix<double, Dynamic, Dynamic> m)
   return ret;
 }
 
+Matrix<double, Dynamic, Dynamic> cM2d(Matrix<complex, Dynamic, Dynamic> m)
+{
+  Matrix<double, Dynamic, Dynamic> ret;
+  ret.resize(m.rows(), m.cols());
+  ret.setZero();
+  for(int i=0; i<m.rows(); ++i)
+    for(int j=0; j<m.cols(); ++j)
+    {
+      double c = std::real(m(i, j));
+      ret(i, j) = c;
+    }
+  return ret;
+}
+
+
 complex expectationValue(Matrix<double, Dynamic, Dynamic> state, Matrix<complex, Dynamic, Dynamic> op)
 {
   complex exp = 0;
@@ -236,6 +251,36 @@ Matrix<complex, Dynamic, Dynamic> twoSystemRho(Matrix<double, Dynamic, Dynamic> 
   rho(3, 2) = xminus(N, state);
   rho(3, 3) = vminus(N, state);
   return rho;
+}
+
+double altConcurrence(Matrix<double, Dynamic, Dynamic> state)
+{
+  Matrix<double, Dynamic, Dynamic> rho = cM2d(twoSystemRho(state));
+  Matrix<double, Dynamic, Dynamic> ssy;
+  ssy.resize(4, 4);
+  ssy.setZero();
+  ssy(0, 3) = -1;
+  ssy(1, 2) = 1;
+  ssy(2, 1) = 1;
+  ssy(3, 0) = -1;
+  Matrix<double, Dynamic, Dynamic> R = rho*ssy;
+  R = R*R;
+  // Uses the regular eigensolver here,
+  // because the R matrix is not selfadjoint.
+  EigenSolver<Matrix<double, Dynamic, Dynamic> > es;
+  es.compute(R);
+  auto ev = es.eigenvalues();
+  // Applies std::abs() before taking the sqrt to avoid
+  // complex numbers. When the eigenvalues are close to 0
+  // the floating point precision will sometimes lead to
+  // negative values, while they should actually be zero.
+  std::vector<double> lambdas = {std::sqrt(std::abs(ev(0))),
+  				 std::sqrt(std::abs(ev(1))),
+  				 std::sqrt(std::abs(ev(2))),
+  				 std::sqrt(std::abs(ev(3)))};
+  std::sort(lambdas.begin(), lambdas.end());
+  double c = std::max(0., lambdas[3] - lambdas[2] - lambdas[1] - lambdas[0]);
+  return c;
 }
 
 Matrix<double, Dynamic, Dynamic> ptrace(const Matrix<double, Dynamic, Dynamic>& rho, std::vector<std::vector<BigDouble> > pascal, const int& N)
@@ -596,7 +641,7 @@ void lambdaNotOneConcurrence(const int& p)
   // Calculates the rescaled concurrence for lambda!=1
   std::vector<double> s_list = linspace(0, 1, 501);
   std::vector<double> l_list = linspace(0.2, 1., 5);
-  std::vector<int> N_list = {2};
+  std::vector<int> N_list = {128};
   for(double l : l_list)
   {
     std::ostringstream strs;
@@ -606,19 +651,24 @@ void lambdaNotOneConcurrence(const int& p)
       continue;
     std::vector<std::vector<BigDouble> > pascal, temp;
     std::vector<std::vector<double> > concurrences;
+    std::vector<std::vector<double> > altConcurrences;
     for(int N : N_list)
     {
       temp = pascalTriangle(pascal.size(), N);
       pascal.insert(pascal.end(), temp.begin(), temp.end());
       std::cout << "Calculating concurrence " << N << " Spins." << std::endl;
+      std::vector<double> altconcurrences;
       std::vector<double> concurrence;
       for(double s: s_list)
       {
 	SelfAdjointEigenSolver<Matrix<double, Dynamic, Dynamic> > es;
 	es.compute(H0plusVaffplusVtf(N, s, l, p));
 	concurrence.push_back(calculateConcurrence(es, pascal, N)*(N-1));
+	altconcurrences.push_back(altConcurrence(es.eigenvectors().col(0))*(N-1));
+	std::cout << "compare " << concurrence.back() << " " << altconcurrences.back() << std::endl;
       }
       concurrences.push_back(concurrence);
+      altConcurrences.push_back(altconcurrences);
     }
     std::cout << "Done." << std::endl;
     Gnuplot gp("Rescaled concurrence Cr");
@@ -635,6 +685,7 @@ void lambdaNotOneConcurrence(const int& p)
       std::ostringstream s2;
       s2 << N_list[i] << " Spins";
       gp.set_style("lines").plot_xy(s_list, concurrences[i], s2.str());
+      gp.set_style("lines").plot_xy(s_list, altConcurrences[i], s2.str());
     }
     title = ("../results/concurrence/p" + std::to_string(p) + "/lambda" + str + "limit.csv");
     std::cout << "reading " << title << std::endl;
@@ -644,6 +695,6 @@ void lambdaNotOneConcurrence(const int& p)
     gp.set_style("lines").plot_xy(s_list, limit, "limit");
     gp.unset_smooth();
     gp.showonscreen();
-    // std::system("read");
+    std::system("read");
   }
 }
