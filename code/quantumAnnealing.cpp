@@ -200,7 +200,7 @@ complex w(const int& N, Matrix<double, Dynamic, Dynamic> state)
 
 complex y(const int& N, Matrix<double, Dynamic, Dynamic> state)
 {
-  complex y = 2.*expectationValue(state, dM2c(Sx(N)*Sx(N)) + Sy(N)+Sy(N)) - (double)N;
+  complex y = 2.*expectationValue(state, dM2c(Sx(N)*Sx(N)) + Sy(N)*Sy(N)) - (double)N;
   y /= (double)2*N*(N-1);
   return y;
 }
@@ -381,8 +381,6 @@ Matrix<double, Dynamic, Dynamic> H0plusVaffplusVtf(const int& N, const double& s
 
 Matrix<double, Dynamic, Dynamic> ket2dm(SelfAdjointEigenSolver<Matrix<double, Dynamic, Dynamic> > es, const int& N)
 {
-  // Takes a ket and creates a density matrix from it.
-  // TODO makesure we get the eigenvector to the smalles value!
   return es.eigenvectors().col(0)*es.eigenvectors().col(0).transpose();
 }
 
@@ -499,7 +497,7 @@ void lambdaOneConcurrence(const int& p)
 {
   // Calculates the rescaled concurrence for lambda=1
   std::vector<double> s_list = linspace(0, 1, 501);
-  std::vector<int> N_list = {20, 40, 60, 100, 200};
+  std::vector<int> N_list = {2};
 
   std::vector<std::vector<double> > concurrences;
   std::vector<std::vector<BigDouble> > pascal, temp;
@@ -598,7 +596,7 @@ void lambdaNotOneConcurrence(const int& p)
   // Calculates the rescaled concurrence for lambda!=1
   std::vector<double> s_list = linspace(0, 1, 501);
   std::vector<double> l_list = linspace(0.2, 1., 5);
-  std::vector<int> N_list = {20, 40, 60, 80, 100};
+  std::vector<int> N_list = {2};
   for(double l : l_list)
   {
     std::ostringstream strs;
