@@ -188,13 +188,17 @@ BOOST_AUTO_TEST_CASE(test_expectationValue)
 
 BOOST_AUTO_TEST_CASE(test_twoSystemRho)
 {
-  Matrix<double, Dynamic, Dynamic> H = H0(2, 5);
+  Matrix<double, Dynamic, Dynamic> H = -H0(2, 5);
+  Matrix<double, Dynamic, Dynamic> e;
+  e.resize(4, 4);
+  e.setZero();
+  e(3, 3) = 1;
+  auto expected = dM2c(e);
   SelfAdjointEigenSolver<Matrix<double, Dynamic, Dynamic> > es;
   es.compute(H);
-  // TODO find out which vector belongs to which eigenstate
-  auto vector = es.eigenvectors().col(1);
+  auto vector = es.eigenvectors().col(0);
   auto actual = twoSystemRho(vector);
-  std::cout << actual << std::endl;
+  BOOST_CHECK(expected.isApprox(actual, 0.00001));
 }
 
 BOOST_AUTO_TEST_CASE(test_ptrace)
