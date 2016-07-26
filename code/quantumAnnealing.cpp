@@ -665,6 +665,8 @@ void lambdaNotOneConcurrence(const int& p)
 	es.compute(H0plusVaffplusVtf(N, s, l, p));
 	concurrence.push_back(calculateConcurrence(es, pascal, N)*(N-1));
 	altconcurrences.push_back(altConcurrence(es.eigenvectors().col(0))*(N-1));
+	assert(std::abs(concurrence.back() - altconcurrences.back()) < 0.0001);
+	assert(concurrence.back()/(N-1) <= 1.);
 	std::cout << "compare " << concurrence.back() << " " << altconcurrences.back() << std::endl;
       }
       concurrences.push_back(concurrence);
