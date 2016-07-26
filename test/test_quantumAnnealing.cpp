@@ -15,9 +15,6 @@
 #include <Eigen/Eigenvalues>
 #include <vector>
 
-// remove later
-#include <iostream>
-
 using namespace Eigen;
 
 
