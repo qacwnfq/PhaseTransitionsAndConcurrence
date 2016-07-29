@@ -641,7 +641,7 @@ void lambdaNotOneConcurrence(const int& p)
   // Calculates the rescaled concurrence for lambda!=1
   std::vector<double> s_list = linspace(0, 1, 501);
   std::vector<double> l_list = linspace(0.2, 1., 5);
-  std::vector<int> N_list = {128};
+  std::vector<int> N_list = {2, 16, 64};
   for(double l : l_list)
   {
     std::ostringstream strs;
@@ -651,32 +651,32 @@ void lambdaNotOneConcurrence(const int& p)
       continue;
     std::vector<std::vector<BigDouble> > pascal, temp;
     std::vector<std::vector<double> > concurrences;
-    std::vector<std::vector<double> > altConcurrences;
+    // std::vector<std::vector<double> > altConcurrences;
     for(int N : N_list)
     {
       temp = pascalTriangle(pascal.size(), N);
       pascal.insert(pascal.end(), temp.begin(), temp.end());
       std::cout << "Calculating concurrence " << N << " Spins." << std::endl;
-      std::vector<double> altconcurrences;
+      // std::vector<double> altconcurrences;
       std::vector<double> concurrence;
       for(double s: s_list)
       {
 	SelfAdjointEigenSolver<Matrix<double, Dynamic, Dynamic> > es;
 	es.compute(H0plusVaffplusVtf(N, s, l, p));
-	concurrence.push_back(calculateConcurrence(es, pascal, N)*(N-1));
-	altconcurrences.push_back(altConcurrence(es.eigenvectors().col(0))*(N-1));
-	assert(std::abs(concurrence.back() - altconcurrences.back()) < 0.0001);
-	assert(concurrence.back()/(N-1) <= 1.);
-	std::cout << "compare " << concurrence.back() << " " << altconcurrences.back() << std::endl;
+	concurrence.push_back((N-1)*(calculateConcurrence(es, pascal, N)));
+	// altconcurrences.push_back(altConcurrence(es.eigenvectors().col(0))*(N-1));
+	// assert(std::abs(concurrence.back() - altconcurrences.back()) < 0.0001);
+	// assert(concurrence.back()/(N-1) <= 1.);
+	// std::cout << "compare " << concurrence.back() << " " << altconcurrences.back() << std::endl;
       }
       concurrences.push_back(concurrence);
-      altConcurrences.push_back(altconcurrences);
+      //altConcurrences.push_back(altconcurrences);
     }
     std::cout << "Done." << std::endl;
     Gnuplot gp("Rescaled concurrence Cr");
     std::ostringstream s, s2;
     s << "Rescaled Concurrece for p=" + std::to_string(p) + " and lambda=" << l;
-    s2 << "cRforLambda" << l << "lines";
+    s2 << "cRforLambda" << l;
     auto title = s.str();
     auto title2 = s2.str();
     gp.set_title(title);
@@ -687,7 +687,7 @@ void lambdaNotOneConcurrence(const int& p)
       std::ostringstream s2;
       s2 << N_list[i] << " Spins";
       gp.set_style("lines").plot_xy(s_list, concurrences[i], s2.str());
-      gp.set_style("lines").plot_xy(s_list, altConcurrences[i], s2.str());
+      //gp.set_style("lines").plot_xy(s_list, altConcurrences[i], s2.str());
     }
     title = ("../results/concurrence/p" + std::to_string(p) + "/lambda" + str + "limit.csv");
     std::cout << "reading " << title << std::endl;
@@ -697,6 +697,26 @@ void lambdaNotOneConcurrence(const int& p)
     gp.set_style("lines").plot_xy(s_list, limit, "limit");
     gp.unset_smooth();
     gp.showonscreen();
-    std::system("read");
+    std::cout << "Writing to file" << std::endl;
+    title2 = "../results/concurrence/p" + title2 + ".csv";
+    std::ofstream myfile;
+    myfile.open(title2);
+    myfile << "s" << ",";
+    for(int j=0; j<N_list.size(); ++j)
+    {
+      myfile << N_list[j] << ",";
+    }
+    myfile << std::endl;
+    for(int i=0; i<s_list.size(); ++i)
+    {
+      myfile << s_list[i] << ",";
+      for(int j=0; j<N_list.size(); ++j)
+      {
+	myfile << concurrences[j][i] << ",";
+      }
+      myfile << std::endl;
+    }
+    myfile.close();
+    //std::system("read");
   }
 }
