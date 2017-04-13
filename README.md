@@ -1,4 +1,6 @@
 [![Build Status](https://travis-ci.org/qacwnfq/phaseTransitionsAndConcurrence.svg?branch=master)](https://travis-ci.org/qacwnfq/phaseTransitionsAndConcurrence)
+
+
 This code was used to calculate the concurrence in https://arxiv.org/pdf/1612.08265.pdf
 
 Get the code with:
@@ -14,6 +16,8 @@ make
 ```
 
 Run the boost unit tests:
+```
 cd tests/
 make
 ./test_QuantumAnnealing.out
+```
