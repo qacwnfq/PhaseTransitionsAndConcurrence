@@ -17,7 +17,6 @@
 #include <unsupported/Eigen/MatrixFunctions>
 #include <vector>
 
-#include "/home/fredrik/repos/gnuplot-cpp/gnuplot_i.hpp"
 
 using namespace Eigen;
 
@@ -385,8 +384,10 @@ Matrix<double, Dynamic, Dynamic> H0(const int& N, const int& p)
   double S = double(N)/2.;
   Matrix<double, Dynamic, Dynamic> H0 = Sz(N);
   H0 /= S;
-  MatrixPower<Matrix<double, Dynamic, Dynamic> > Apow(H0);
-  H0 = Apow(p);
+  Matrix<double, Dynamic, Dynamic> Temp(H0);
+  for(int i=0; i<p-1; ++i){
+    H0 = H0*Temp;
+  }
   H0 *= -N;
   return H0;
 }
@@ -407,8 +408,6 @@ Matrix<double, Dynamic, Dynamic> Vaff(const int& N)
   double S = double(N)/2;
   Matrix<double, Dynamic, Dynamic> Vaff = Sx(N);
   Vaff /= S;
-  //MatrixPower<Matrix<double, Dynamic, Dynamic> > Apow(Vaff);
-  // Vaff = Apow(2);
   Vaff *= Vaff;
   Vaff *= N;
   return Vaff;
@@ -466,8 +465,7 @@ double concurrence(Matrix<double, Dynamic, Dynamic> rho)
   rho(2, 2) = -copy(2, 0);
 
   // Calculates R matrix and store it in rho variable.
-  MatrixPower<Matrix<double, Dynamic, Dynamic> > Apow(rho);
-  rho = Apow(2);
+  rho = rho*rho;
   // Uses the regular eigensolver here,
   // because the R matrix is not selfadjoint.
   EigenSolver<Matrix<double, Dynamic, Dynamic> > es;
@@ -519,23 +517,6 @@ void lambdaOne(const int& p)
     energies.push_back(energy);
   }
   std::cout << "Done." << std::endl;
-  Gnuplot gp("Energy per spin");
-  std::ostringstream s;
-  s << "Energy per Spin ";
-  auto title = s.str();
-  gp.set_title(title);
-  gp.set_xlabel("s");
-  for(int i=0; i<N_list.size(); ++i)
-  {
-    std::ostringstream s2;
-    s2 << N_list[i] << " Spins";
-    gp.set_style("lines").plot_xy(s_list, energies[i], s2.str());
-  }
-  gp.unset_smooth();
-  gp.showonscreen();
-  std::cout << "Press Enter to exit." << std::endl;
-  // "read" for max linux, "pause" for windows
-  std::system("read");
 }
 
 void lambdaOneConcurrence(const int& p)
@@ -561,32 +542,7 @@ void lambdaOneConcurrence(const int& p)
     }
     concurrences.push_back(concurrence);
   }
-  std::cout << "Done." << std::endl;
-  Gnuplot gp("Rescaled concurrence Cr");
-  std::ostringstream s;
-  s << "Rescaled concurrence for lambda=1";
-  auto title = s.str();
-  gp.set_title(title);
-  gp.set_xlabel("s");
-  gp.set_ylabel("Cr");
-  for(int i=0; i<N_list.size(); ++i)
-  {
-    std::ostringstream s2;
-    s2 << N_list[i] << " Spins";
-    gp.set_style("points").plot_xy(s_list, concurrences[i], s2.str());
-  }
-
-  title = ("../results/concurrence/p" + std::to_string(p) + "/lambda1limit.csv");
-  std::cout << "reading " << title << std::endl;
-  std::vector<double> limit = readLimit(title);
-
-  gp.set_style("lines").plot_xy(s_list, limit, "limit");
-  gp.unset_smooth();
-  gp.showonscreen();
-  std::cout << "Press Enter to exit." << std::endl;
-  // "read" for max linux, "pause" for windows
-  std::system("read");
-}
+  std::cout << "Done." << std::endl;}
 
 void lambdaNotOne(const int& p)
 {
@@ -612,27 +568,6 @@ void lambdaNotOne(const int& p)
       energies.push_back(energy);
     }
     std::cout << "Done." << std::endl;
-    Gnuplot gp("Rescaled concurrence");
-
-    std::ostringstream strs;
-    strs << l;
-    std::string str = strs.str();
-    std::ostringstream s;
-    s << "Rescaled concurrence for  lambda=" + str;
-    auto title = s.str();
-    gp.set_title(title);
-    gp.set_xlabel("s");
-    for(int i=0; i<N_list.size(); ++i)
-    {
-      std::ostringstream s2;
-      s2 << N_list[i] << " Spins";
-      gp.set_style("lines").plot_xy(s_list, energies[i], s2.str());
-    }
-    gp.unset_smooth();
-    gp.showonscreen();
-    std::cout << "Press Enter to exit." << std::endl;
-    // "read" for max linux, "pause" for windows
-    std::system("read");
   }
 }
 
@@ -673,30 +608,11 @@ void lambdaNotOneConcurrence(const int& p)
       //altConcurrences.push_back(altconcurrences);
     }
     std::cout << "Done." << std::endl;
-    Gnuplot gp("Rescaled concurrence Cr");
     std::ostringstream s, s2;
     s << "Rescaled Concurrece for p=" + std::to_string(p) + " and lambda=" << l;
     s2 << "cRforLambda" << l;
     auto title = s.str();
     auto title2 = s2.str();
-    gp.set_title(title);
-    gp.set_xlabel("s");
-    gp.set_ylabel("Cr");
-    for(int i=0; i<N_list.size(); ++i)
-    {
-      std::ostringstream s2;
-      s2 << N_list[i] << " Spins";
-      gp.set_style("lines").plot_xy(s_list, concurrences[i], s2.str());
-      //gp.set_style("lines").plot_xy(s_list, altConcurrences[i], s2.str());
-    }
-    title = ("../results/concurrence/p" + std::to_string(p) + "/lambda" + str + "limit.csv");
-    std::cout << "reading " << title << std::endl;
-    std::vector<double> limit = readLimit(title);
-    gp.savetops(title2);
-    std::cout << limit.size() << std::endl;
-    gp.set_style("lines").plot_xy(s_list, limit, "limit");
-    gp.unset_smooth();
-    gp.showonscreen();
     std::cout << "Writing to file" << std::endl;
     title2 = "../results/concurrence/p" + title2 + ".csv";
     std::ofstream myfile;
@@ -717,6 +633,5 @@ void lambdaNotOneConcurrence(const int& p)
       myfile << std::endl;
     }
     myfile.close();
-    //std::system("read");
   }
 }
