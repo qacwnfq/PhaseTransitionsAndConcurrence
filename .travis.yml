@@ -22,8 +22,7 @@ compiler:
 
 install:
   - cd src/ && make
-  - pwd
-  - cd test/ && make
+  - cd ../test/ && make
 
 script:
   - pwd
