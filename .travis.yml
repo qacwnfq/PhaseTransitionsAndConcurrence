@@ -25,5 +25,5 @@ install:
   - cd ../test/ && make
 
 script:
-  - test_quantumAnnealing.out
+  - ./test_quantumAnnealing.out
 
