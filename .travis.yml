@@ -1,4 +1,5 @@
-sudo: false
+sudo: required
+dist: trusty
 
 language: cpp
 
@@ -11,11 +12,13 @@ addons:
     - boost-latest
     - ubuntu-toolchain-r-test
     packages:
-    - g++-6.3
     - libboost1.55-all-dev
+    - clang-3.6
+    - gcc=5
+    - g++5
 
 compiler:
-  - g++
+  - clang
 
 install:
   - cd src/ && make
