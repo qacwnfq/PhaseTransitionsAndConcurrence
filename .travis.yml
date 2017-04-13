@@ -19,13 +19,9 @@ addons:
 
 compiler:
   - clang
-
 install:
   - cd src/ && make
   - cd ../test/ && make
 
 script:
   - ./test_quantumAnnealing.out
-
-notifications:
-  webhooks: https://coveralls.io/webhook?repo_token=$COVERALLS_TOKEN

@@ -16,6 +16,8 @@ make
 ```
 
 Run the boost unit tests:
+This is optional, but useful for CI. Install the library on UBUNTU with `sudo apt-get install libboost-test-dev`.
+Travis-CI automatically executes the tests and complains if they fail.
 ```
 cd tests/
 make
