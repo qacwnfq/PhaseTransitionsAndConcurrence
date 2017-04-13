@@ -27,3 +27,5 @@ install:
 script:
   - ./test_quantumAnnealing.out
 
+notifications:
+  webhooks: https://coveralls.io/webhook?repo_token=$COVERALLS_TOKEN
