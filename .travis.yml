@@ -1,0 +1,28 @@
+sudo: false
+
+language: cpp
+
+cache:
+  apt: true
+
+addons:
+  apt:
+    sources:
+    - boost-latest
+    - ubuntu-toolchain-r-test
+    packages:
+    - g++-4.9
+    - libboost1.55-all-dev
+
+compiler:
+  - g++
+
+install:
+  - cd src/ && make
+  - pwd
+  - cd test/ && make
+
+script:
+  - pwd
+  - test/test_quantumAnnealing.out
+
