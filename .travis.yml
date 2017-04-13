@@ -14,8 +14,8 @@ addons:
     packages:
     - libboost1.55-all-dev
     - clang-3.6
-    - gcc=5
-    - g++5
+    - gcc-5
+    - g++-5
 
 compiler:
   - clang
