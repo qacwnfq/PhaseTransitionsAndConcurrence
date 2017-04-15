@@ -20,24 +20,6 @@
 
 using namespace Eigen;
 
-template<typename T>
-std::vector<double> linspace(const T& s, const T& e, const int& n)
-{
-  // This is a useful template to recreate numpys linspace from python
-  double start = static_cast<double>(s);
-  double end = static_cast<double>(e);
-  double num = static_cast<double>(n);
-  double delta = (end - start)/(num-1);
-
-  std::vector<double> linspaced(num);
-  for(int i=0; i<num; ++i)
-  {
-    linspaced[i] = start + delta*i;
-  }
-  linspaced[end];
-  return linspaced;
-}
-
 std::vector<double> gen_m(const int& N)
 {
   assert(N > 0);
@@ -291,7 +273,6 @@ Matrix<double, Dynamic, Dynamic> ptrace(const Matrix<double, Dynamic, Dynamic>& 
   std::vector<BigDouble> New = pascal[N-2];
   std::vector<BigDouble> Old = pascal[N-1];
   double temp = 0;
-  // TODO use symmetry of density matrix to speed up calculations
   for(int i=0; i<N; ++i)
   {
     for(int j=0; j<N; ++j)
@@ -497,11 +478,9 @@ double calculateConcurrence(SelfAdjointEigenSolver<Matrix<double, Dynamic, Dynam
   return c;
 }
 
-void lambdaOne(const int& p)
+std::vector<std::vector<double>> lambdaOne(const int& p, const std::vector<double>& s_list, const std::vector<int>& N_list)
 {
   // Calculates the groundstate energy for lambda=1
-  std::vector<double> s_list = linspace(0, 1, 501);
-  std::vector<int> N_list = {2, 4, 8, 16, 32, 64, 128, 256};
   std::vector<std::vector<double>> energies;
   for(int N: N_list)
   {
@@ -517,14 +496,12 @@ void lambdaOne(const int& p)
     energies.push_back(energy);
   }
   std::cout << "Done." << std::endl;
+  return energies;
 }
 
-void lambdaOneConcurrence(const int& p)
+std::vector<std::vector<double>> lambdaOneConcurrence(const int& p, const std::vector<double>& s_list,  const std::vector<int>& N_list)
 {
   // Calculates the rescaled concurrence for lambda=1
-  std::vector<double> s_list = linspace(0, 1, 501);
-  std::vector<int> N_list = {2};
-
   std::vector<std::vector<double> > concurrences;
   std::vector<std::vector<BigDouble> > pascal, temp;
   for(int N: N_list)
@@ -535,103 +512,62 @@ void lambdaOneConcurrence(const int& p)
     std::vector<double> concurrence;
     for(double s: s_list)
     {
-      std::cout << s << std::endl;
       SelfAdjointEigenSolver<Matrix<double, Dynamic, Dynamic> > es;
       es.compute(H0plusVtf(N, s, p));
       concurrence.push_back(calculateConcurrence(es, pascal, N)*(N-1));
     }
     concurrences.push_back(concurrence);
   }
-  std::cout << "Done." << std::endl;}
-
-void lambdaNotOne(const int& p)
-{
-  // Calculates the groundstate energy for lambda!=1
-  std::vector<double> s_list = linspace(0, 1, 101);
-  std::vector<double> l_list = linspace(0, 1, 6);
-  std::vector<int> N_list = {2, 4, 8, 16, 32, 64, 128};
-  for(double l : l_list)
-  {
-    std::vector<std::vector<double>> energies;
-    for(int N: N_list)
-    {
-      std::cout << "Calculating " << N << " Spins for lambda "
-		<< l << "." << std::endl;
-      std::vector<double> energy;
-      for(double s: s_list)
-      {
-	SelfAdjointEigenSolver<Matrix<double, Dynamic, Dynamic> > es;
-	es.compute(H0plusVaffplusVtf(N, s, l, p));
-	double ev = es.eigenvalues()(0);
-	energy.push_back(ev/N);
-      }
-      energies.push_back(energy);
-    }
-    std::cout << "Done." << std::endl;
-  }
+  std::cout << "Done." << std::endl;
+  return concurrences;
 }
 
-void lambdaNotOneConcurrence(const int& p)
-{
-  // Calculates the rescaled concurrence for lambda!=1
-  std::vector<double> s_list = linspace(0, 1, 501);
-  std::vector<double> l_list = linspace(0.2, 1., 5);
-  std::vector<int> N_list = {2, 16, 64};
-  for(double l : l_list)
+std::vector<std::vector<double>> lambdaNotOne(const double& l, const int& p, const std::vector<double>& s_list,  const std::vector<int>& N_list)
+{  
+  // Calculates the groundstate energy for lambda=l
+  assert(l >= 0);
+  assert(l <= 1);
+  std::vector<std::vector<double>> energies;
+  for(int N: N_list)
   {
-    std::ostringstream strs;
-    strs << l;
-    std::string str = strs.str();
-    if(l==0.)
-      continue;
-    std::vector<std::vector<BigDouble> > pascal, temp;
-    std::vector<std::vector<double> > concurrences;
-    // std::vector<std::vector<double> > altConcurrences;
-    for(int N : N_list)
+    std::cout << "Calculating " << N << " Spins for lambda " << l << "." << std::endl;
+    std::vector<double> energy;
+    for(double s: s_list)
     {
-      temp = pascalTriangle(pascal.size(), N);
-      pascal.insert(pascal.end(), temp.begin(), temp.end());
-      std::cout << "Calculating concurrence " << N << " Spins." << std::endl;
-      // std::vector<double> altconcurrences;
-      std::vector<double> concurrence;
-      for(double s: s_list)
-      {
-	SelfAdjointEigenSolver<Matrix<double, Dynamic, Dynamic> > es;
-	es.compute(H0plusVaffplusVtf(N, s, l, p));
-	concurrence.push_back((N-1)*(calculateConcurrence(es, pascal, N)));
-	// altconcurrences.push_back(altConcurrence(es.eigenvectors().col(0))*(N-1));
-	// assert(std::abs(concurrence.back() - altconcurrences.back()) < 0.0001);
-	// assert(concurrence.back()/(N-1) <= 1.);
-	// std::cout << "compare " << concurrence.back() << " " << altconcurrences.back() << std::endl;
-      }
-      concurrences.push_back(concurrence);
-      //altConcurrences.push_back(altconcurrences);
+      SelfAdjointEigenSolver<Matrix<double, Dynamic, Dynamic> > es;
+      es.compute(H0plusVaffplusVtf(N, s, l, p));
+      double ev = es.eigenvalues()(0);
+      energy.push_back(ev/N);
     }
-    std::cout << "Done." << std::endl;
-    std::ostringstream s, s2;
-    s << "Rescaled Concurrece for p=" + std::to_string(p) + " and lambda=" << l;
-    s2 << "cRforLambda" << l;
-    auto title = s.str();
-    auto title2 = s2.str();
-    std::cout << "Writing to file" << std::endl;
-    title2 = "../results/concurrence/p" + title2 + ".csv";
-    std::ofstream myfile;
-    myfile.open(title2);
-    myfile << "s" << ",";
-    for(int j=0; j<N_list.size(); ++j)
-    {
-      myfile << N_list[j] << ",";
-    }
-    myfile << std::endl;
-    for(int i=0; i<s_list.size(); ++i)
-    {
-      myfile << s_list[i] << ",";
-      for(int j=0; j<N_list.size(); ++j)
-      {
-	myfile << concurrences[j][i] << ",";
-      }
-      myfile << std::endl;
-    }
-    myfile.close();
+    energies.push_back(energy);
   }
+  std::cout << "Done." << std::endl;
+  return energies;
+}
+
+std::vector<std::vector<double>> lambdaNotOneConcurrence(const double& l, const int& p, const std::vector<double>& s_list,  const std::vector<int>& N_list)
+{
+  // Calculates the rescaled concurrence for lambda=l
+  assert(l >= 0);
+  assert(l <= 1);
+  std::vector<std::vector<BigDouble> > pascal, temp;
+  std::vector<std::vector<double> > concurrences;
+  for(int N: N_list)
+  {
+    temp = pascalTriangle(pascal.size(), N);
+    pascal.insert(pascal.end(), temp.begin(), temp.end());
+    std::cout << "Calculating concurrence " << N << " Spins." << std::endl;
+    // std::vector<double> altconcurrences;
+    std::vector<double> concurrence;
+    for(double s: s_list)
+    {
+      SelfAdjointEigenSolver<Matrix<double, Dynamic, Dynamic> > es;
+      es.compute(H0plusVaffplusVtf(N, s, l, p));
+      concurrence.push_back((N-1)*(calculateConcurrence(es, pascal, N)));
+
+    }
+    concurrences.push_back(concurrence);
+  }
+  std::cout << "Done." << std::endl;
+  return concurrences;
 }

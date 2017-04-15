@@ -306,3 +306,35 @@ BOOST_AUTO_TEST_CASE(test_concurrence)
   rho(2, 1) = 0.00150778;
   rho(2, 2) = 0.0527616;
 }
+
+BOOST_AUTO_TEST_CASE(test_concurrence_alternative)
+{
+  std::vector<double> s_list = linspace(0, 1, 11);
+  std::vector<double> l_list = linspace(0, 1, 6);
+  std::vector<int> N_list = {2, 4, 8, 16};
+  int p = 7;
+  for(int l: l_list)
+  {
+    std::vector<std::vector<BigDouble> > pascal, temp;
+    std::vector<std::vector<double> > concurrences;
+    std::vector<std::vector<double> > altConcurrences;
+    for(int N: N_list)
+    {
+      temp = pascalTriangle(pascal.size(), N);
+      pascal.insert(pascal.end(), temp.begin(), temp.end());
+      std::vector<double> altconcurrences;
+      std::vector<double> concurrence;
+      for(double s: s_list)
+      {
+	SelfAdjointEigenSolver<Matrix<double, Dynamic, Dynamic> > es;
+	es.compute(H0plusVaffplusVtf(N, s, l, p));
+	concurrence.push_back((N-1)*(calculateConcurrence(es, pascal, N)));
+	// Alternative way of calculating concurrence
+	altconcurrences.push_back(altConcurrence(es.eigenvectors().col(0))*(N-1));
+	// Checks if both ways agree
+	assert(std::abs(concurrence.back() - altconcurrences.back()) < 0.0001);
+	assert(concurrence.back()/(N-1) <= 1.);
+      }
+    }
+  }
+}

@@ -4,10 +4,9 @@
 #include <fstream>
 #include <iostream>
 #include <string>
+#include <sstream>
 #include <tuple>
 #include <vector>
-
-#include "/home/fredrik/repos/gnuplot-cpp/gnuplot_i.hpp"
 
 using namespace std;
 
@@ -58,9 +57,9 @@ std::vector<double> linspace(const T& s, const T& e, const int& n)
   return linspaced;
 }
 
-std::vector<std::vector<double>> create_const(const int& x, const int& y, const double& c)
+std::vector<std::vector<double> > create_const(const int& x, const int& y, const double& c)
 {
-  std::vector<std::vector<double>> one(x);
+  std::vector<std::vector<double> > one(x);
   for(auto &k : one)
   {
     k = std::vector<double>(y, c);
@@ -73,13 +72,12 @@ auto run(const int& ns, const int& nl, const int&p, const double& precision)
 {
   std::vector<double> sspace = linspace(0, 1, ns);
   std::vector<double> lspace = linspace(0.1, 1., nl);
-  std::vector<std::vector<double>> mx = create_const(nl, ns, 0.8);
-  std::vector<std::vector<double>> mz = create_const(nl, ns, 0.6);
-  std::vector<std::vector<double>> f = create_const(nl, ns, 0.);
+  std::vector<std::vector<double> > mx = create_const(nl, ns, 0.8);
+  std::vector<std::vector<double> > mz = create_const(nl, ns, 0.6);
+  std::vector<std::vector<double> > f = create_const(nl, ns, 0.);
   double prevmx, prevmz;
   for(int i=0; i<nl; ++i)
   {
-    cout << "next lambda" << endl;
     for(int j=0; j<ns; ++j)
     {
       double m = 0;
@@ -130,14 +128,14 @@ int main(int argc, char** argv)
   std::vector<double> lspace = linspace(0, 1, nl);
 
   auto result_tuple = run(ns, nl, p, precision);
-  std::vector<std::vector<double>> mx = std::get<0>(result_tuple);
-  std::vector<std::vector<double>> mz = std::get<1>(result_tuple);
-  std::vector<std::vector<double>> f = std::get<2>(result_tuple);
+  std::vector<std::vector<double> > mx = std::get<0>(result_tuple);
+  std::vector<std::vector<double> > mz = std::get<1>(result_tuple);
+  std::vector<std::vector<double> > f = std::get<2>(result_tuple);
   for(int i=0; i < nl; ++i)
   {
-    std::ostringstream s;
-    s << "../results/magnetization/MagnetizationLambda" << lspace[i] << "p" << p << ".csv";
-    auto title = s.str();
+    std::ostringstream os;
+    os << "../results/magnetization/MagnetizationLambda" << lspace[i] << "p" << p << ".csv";
+    auto title = os.str();
     myfile.open(title);
     myfile << "Thermodynamic Limit Magnetization p=" << p <<"\n";
     myfile << "s, mx,mz,f\n";
