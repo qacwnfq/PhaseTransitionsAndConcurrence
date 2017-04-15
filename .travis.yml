@@ -10,18 +10,15 @@ addons:
   apt:
     sources:
     - boost-latest
-    - ubuntu-toolchain-r-test
     packages:
     - libboost1.55-all-dev
     - clang-3.6
-    - gcc-5
-    - g++-5
 
 compiler:
   - clang
 install:
   - cd src/ && make
-  - cd ../test/ && make
+  - cd ../tests/ && make
 
 script:
   - ./test_quantumAnnealing.out
